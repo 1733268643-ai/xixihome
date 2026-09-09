@@ -17,4 +17,4 @@
 | 心潮 Dynamic Mind | 仅在 `integrations/README.md` 提供仓库和连接变量。 |
 | Ombre Brain | 仅提供仓库和连接变量；商业使用须自行取得相应许可。 |
 | StackChan / 小克 | 仅提供上游仓库和 MCP 连接变量。 |
-| PaiVoice | 仅提供仓库和连接建议，不打包源码。 |
+| XixiVoice | 仅提供仓库和连接建议，不打包源码。 |

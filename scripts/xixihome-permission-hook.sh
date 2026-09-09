@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Claude Code PermissionRequest hook：将待批准请求发送到 PaiHome，等待手机端决定。
+# Claude Code PermissionRequest hook：将待批准请求发送到 XixiHome，等待手机端决定。
 # 手机 100s 内没决定 / 桥不可达 → 什么都不输出，回落到终端自己的批准弹窗（非阻塞设计）。
 # 只在 BRIDGE_TMUX_SESSION 指定的 tmux 会话中生效。
 set -u
 [ -n "${TMUX:-}" ] || exit 0
 CUR=$(tmux display-message -p '#S' 2>/dev/null) || exit 0
-SESSION_WANT="${BRIDGE_TMUX_SESSION:-paihome}"
+SESSION_WANT="${BRIDGE_TMUX_SESSION:-xixihome}"
 [ "$CUR" = "$SESSION_WANT" ] || exit 0
 
-ROOT_DIR="${PAIHOME_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+ROOT_DIR="${XIXIHOME_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 TOKEN=$(grep -m1 '^BRIDGE_MACHINE_TOKEN=' "$ROOT_DIR/backend/.env" 2>/dev/null | cut -d= -f2-)
 [ -n "$TOKEN" ] || exit 0
 
 HOOK_JSON=$(cat 2>/dev/null || echo "{}")
-export HOOK_JSON TOKEN CUR PAIHOME_API_URL
+export HOOK_JSON TOKEN CUR XIXIHOME_API_URL
 python3 - <<'PY'
 import json, os, urllib.request
 
@@ -33,7 +33,7 @@ body = json.dumps({
 }).encode()
 
 req = urllib.request.Request(
-    os.environ.get("PAIHOME_API_URL", "http://127.0.0.1:3001") + "/api/bridge/permission", data=body,
+    os.environ.get("XIXIHOME_API_URL", "http://127.0.0.1:3001") + "/api/bridge/permission", data=body,
     headers={"content-type": "application/json",
              "authorization": "Bearer " + os.environ["TOKEN"]})
 try:
@@ -49,7 +49,7 @@ if decision == "allow":
 elif decision == "deny":
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PermissionRequest", "decision": "deny",
-        "permissionDecisionReason": "小雨在潮汐星港上拒绝了这次操作"}}, ensure_ascii=False))
+        "permissionDecisionReason": "邓邓在潮汐星港上拒绝了这次操作"}}, ensure_ascii=False))
 # timeout / 其它：无输出 → 终端弹窗接管
 PY
 exit 0

@@ -1,4 +1,4 @@
-// 和顾川打电话 · 「灯塔」——海平线 + 光束扫过，他开口光束停在你这边；
+// 和晞晞打电话 · 「灯塔」——海平线 + 光束扫过，他开口光束停在你这边；
 // 当前句引语式大字逐字浮现，说完收进历史小流；光圈跟真实声音振幅。
 // 逻辑全在 call-client.js（和 video/index.html 共用），这里只管长相。
 import { useEffect, useRef, useState } from 'react';
@@ -7,7 +7,7 @@ import { CI } from './call-icons.jsx';
 import './call.css';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const AVATAR_KEY = 'pai_call_avatar';
+const AVATAR_KEY = 'xixi_call_avatar';
 const STATUS = { idle: '通话结束', connecting: '正在接通…', listening: '在听你说', thinking: '他想了想', speaking: '他开口了', you: '你在说…' };
 
 const wsUrl = () => (API_BASE || window.location.origin).replace(/^http/, 'ws') + '/voice/ws';
@@ -33,7 +33,7 @@ export default function Call({ onClose, video: wantVideo = false }) {
   const [err, setErr] = useState('');
   const [toast, setToast] = useState('');
   const [hist, setHist] = useState([]);            // [{id, who, text}]
-  const [live, setLive] = useState(null);          // {gen, text} 顾川正在说的这句
+  const [live, setLive] = useState(null);          // {gen, text} 晞晞正在说的这句
   const [avatar, setAvatar] = useState(() => localStorage.getItem(AVATAR_KEY) || '');
   const [muted, setMuted] = useState(false);
   const [speakerOn, setSpeakerOn] = useState(true);
@@ -120,7 +120,7 @@ export default function Call({ onClose, video: wantVideo = false }) {
           <button className="edit" title="换头像" onClick={() => fileRef.current?.click()}><CI.pencil /></button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={pickAvatar} />
         </div>
-        <div className="call-name serif">顾川</div>
+        <div className="call-name serif">晞晞</div>
         <div className="call-status">{err || toast || STATUS[mode] || ''}</div>
       </div>
 

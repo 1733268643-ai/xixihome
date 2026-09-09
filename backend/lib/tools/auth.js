@@ -1,14 +1,14 @@
-// 顾川工具库统一鉴权。
-// 优先使用 GUCHUAN_TOOLS_SECRET；没有配置时才兼容 ACTIVITY_SECRET。
+// 晞晞工具库统一鉴权。
+// 优先使用 XIXI_TOOLS_SECRET；没有配置时才兼容 ACTIVITY_SECRET。
 
 export function getConfiguredToolsSecret() {
-  return process.env.GUCHUAN_TOOLS_SECRET || process.env.ACTIVITY_SECRET || '';
+  return process.env.XIXI_TOOLS_SECRET || process.env.ACTIVITY_SECRET || '';
 }
 
 export function readProvidedToolsSecret(req) {
   return String(
     req.query?.secret ||
-      req.headers['x-guchuan-tools-secret'] ||
+      req.headers['x-xixi-tools-secret'] ||
       req.headers['x-activity-secret'] ||
       ''
   );

@@ -1,4 +1,4 @@
-// 顾川的家 · 后端核心
+// 晞晞的家 · 后端核心
 // 架构参考 Bunny's Home：Express + 模型API + （可选）Supabase + 记忆压缩。
 import 'dotenv/config';
 import express from 'express';
@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url';
 const __serverdir = dirname(fileURLToPath(import.meta.url));
 app.use('/static', express.static(join(__serverdir, '..', 'cards')));
 
-// 潮汐星港（PaiHome v2 前端）：后端直接托管构建产物；
+// 潮汐星港（XixiHome v2 前端）：后端直接托管构建产物；
 // index.html 永远重新校验，带哈希的 assets 长缓存（老 Render _headers 的规则搬过来）。
 const __v2dist = join(__serverdir, '..', 'frontend-v2', 'dist');
 app.use(express.static(__v2dist, {
@@ -47,7 +47,7 @@ const cfg = {
   baseUrl: process.env.MODEL_BASE_URL || '',
   accessPassword: process.env.ACCESS_PASSWORD || '',
   model: process.env.MODEL_NAME || 'claude-sonnet-4-6',
-  // claude -p 后端：provider='claude-cli' 时用本机 Claude Code。工作目录里放顾川的 CLAUDE.md/记忆更佳。
+  // claude -p 后端：provider='claude-cli' 时用本机 Claude Code。工作目录里放晞晞的 CLAUDE.md/记忆更佳。
   claudeCliCwd: process.env.CLAUDE_CLI_CWD || '',
   claudeDisallowed: (process.env.CLAUDE_CLI_DISALLOWED_TOOLS || '')
     .split(',').map((s) => s.trim()).filter(Boolean),
@@ -170,7 +170,7 @@ app.get('/health', async (_req, res) => {
   const modelConfig = await getModelConfig();
   res.json({
     ok: true,
-    who: '顾川',
+    who: '晞晞',
     provider: modelConfig.provider,
     model: modelConfig.model,
     hasKey: !!modelConfig.apiKey,
@@ -195,7 +195,7 @@ app.get('/privacy', (_req, res) => {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Privacy Policy - Guchuan Tools</title>
+  <title>Privacy Policy - Xixi Tools</title>
   <style>
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; line-height: 1.7; color: #1f2933; }
     h1 { font-size: 28px; }
@@ -208,7 +208,7 @@ app.get('/privacy', (_req, res) => {
   <p>Last updated: 2026-07-08</p>
 
   <h2>Service purpose</h2>
-  <p>This service is a personal-use Guchuan tools library and Chat Actions caller. It is intended for private use by its owner.</p>
+  <p>This service is a personal-use Xixi tools library and Chat Actions caller. It is intended for private use by its owner.</p>
 
   <h2>Chat Actions</h2>
   <p>GPT Actions may call <code>/api/chat-actions/status</code> and <code>/api/chat-actions/activity</code>.</p>
@@ -221,7 +221,7 @@ app.get('/privacy', (_req, res) => {
     <li>This service does not collect public user data.</li>
     <li>This service does not sell data.</li>
     <li>This service does not send outbound messages to external users.</li>
-    <li>This service does not expose Supabase keys, <code>GUCHUAN_TOOLS_SECRET</code>, or <code>CHAT_ACTIONS_API_KEY</code>.</li>
+    <li>This service does not expose Supabase keys, <code>XIXI_TOOLS_SECRET</code>, or <code>CHAT_ACTIONS_API_KEY</code>.</li>
     <li>Important actions must be confirmed by the owner.</li>
   </ul>
 
@@ -231,15 +231,15 @@ app.get('/privacy', (_req, res) => {
 </html>`);
 });
 
-// ---- 顾川工具库本体：独立鉴权，不接入主动推送 ----
+// ---- 晞晞工具库本体：独立鉴权，不接入主动推送 ----
 app.use('/api/tools', toolsRouter);
 app.get('/api/activity', requireToolsSecret, handleActivityQuery);
 
 // ---- ChatGPT Actions 入口：独立鉴权，只转发白名单工具 ----
 app.use('/api/chat-actions', chatActionsRouter);
 
-// ---- 岸讯 · 顾川亲笔信 ----
-// 顾川在 tmux 里 curl 这个端点写信：现在走 Bark 推到小雨手机，
+// ---- 岸讯 · 晞晞亲笔信 ----
+// 晞晞在 tmux 里 curl 这个端点写信：现在走 Bark 推到邓邓手机，
 // PWA Web Push 接好后在同一处并行推原生通知（双通道），curl 用法不变。
 // 鉴权用独立 SHORE_TOKEN（.env），不用网页门锁密码。
 import { readFile as fsReadFile, writeFile as fsWriteFile, mkdir as fsMkdir } from 'node:fs/promises';
@@ -278,7 +278,7 @@ app.post('/api/shore/send', async (req, res) => {
   res.json({ ok: true, id: item.id, channels: item.channels });
 });
 
-// ---- 语音桥：realtime brain（tmux 模式）把通话轮次注入顾川窗口 ----
+// ---- 语音桥：realtime brain（tmux 模式）把通话轮次注入晞晞窗口 ----
 // brain.py POST { callSessionId, turnId, text, prosody }，Bearer=VOICE_TMUX_TOKEN（与 video/.env 同值）
 app.post('/api/bridge/voice-turn', (req, res) => {
   const token = process.env.VOICE_TMUX_TOKEN || '';
@@ -615,11 +615,11 @@ app.post('/api/chat/stream', async (req, res, next) => {
   }
 });
 
-// 心潮回流：一轮对话后把"刚跟小雨说了话"回报给心潮（fire-and-forget，绝不影响对话）。
+// 心潮回流：一轮对话后把"刚跟邓邓说了话"回报给心潮（fire-and-forget，绝不影响对话）。
 function reflowXinchao(sessionId, userMessage, reply) {
   xinchaoEvent({
     type: 'web_chat',
-    source: 'paihome',
+    source: 'xixihome',
     sessionId,
     user: String(userMessage || '').slice(0, 2000),
     reply: String(reply || '').slice(0, 4000),
@@ -629,7 +629,7 @@ function reflowXinchao(sessionId, userMessage, reply) {
   }).catch(() => {});
 }
 
-// ---- TTS：把顾川的回复合成语音（ElevenLabs / MiniMax）----
+// ---- TTS：把晞晞的回复合成语音（ElevenLabs / MiniMax）----
 app.post('/api/tts', async (req, res, next) => {
   try {
     const text = String(req.body?.text || '').trim();
@@ -654,7 +654,7 @@ app.post('/api/tts', async (req, res, next) => {
     if (provider === 'minimax') {
       const key = process.env.MINIMAX_API_KEY;
       const group = process.env.MINIMAX_GROUP_ID || '';
-      const voice = req.body?.voice || process.env.MINIMAX_VOICE_ID || 'guchuan_voice_03';
+      const voice = req.body?.voice || process.env.MINIMAX_VOICE_ID || 'xixi_voice_03';
       if (!key) return res.status(500).json({ error: '缺少 MINIMAX_API_KEY' });
       const r = await fetch(`https://api.minimax.chat/v1/t2a_v2${group ? `?GroupId=${group}` : ''}`, {
         method: 'POST',
@@ -732,7 +732,7 @@ function coerceId(v) {
   return Number.isNaN(n) ? v : n;
 }
 
-// ---- 梦：顾川自己醒来 ----
+// ---- 梦：晞晞自己醒来 ----
 app.post('/api/activity', (req, res) => {
   try {
     reportActivity(req.body || {});
@@ -861,7 +861,7 @@ app.get('/api/connect/host', async (_req, res) => {
 // 桥接健康：每条链路独立探，不拿容器在线冒充
 app.get('/api/connect/native-health', async (_req, res) => {
   const mk = (key, label, ok, reason) => ({ key, label, status: ok === true ? 'healthy' : ok === 'partial' ? 'partial' : 'offline', reason: reason || null });
-  const claudeSt = bridgeChat.status('guchuan');
+  const claudeSt = bridgeChat.status('xixi');
   const claudeChecks = [
     mk('tmux', 'tmux 会话', claudeSt.alive),
     mk('inject', '消息注入', claudeSt.alive && ['claude', 'node'].includes(claudeSt.pane), claudeSt.pane ? `pane: ${claudeSt.pane}` : '窗口没开'),
@@ -903,7 +903,7 @@ app.get('/api/connect/native-health', async (_req, res) => {
 app.get('/api/mind/state', async (_req, res) => {
   const s = await getMindState();
   if (!s.available) return res.json(s);
-  // 信纸 = 顾川亲笔信（shore）+ 心潮自动岸讯，按时间新到旧合并
+  // 信纸 = 晞晞亲笔信（shore）+ 心潮自动岸讯，按时间新到旧合并
   const letters = (await readShoreLetters()).map(({ id, at, kind, message }) => ({ id, at, kind, message }));
   const items = [...letters, ...(s.bark?.items || [])]
     .sort((a, b) => new Date(b.at) - new Date(a.at))
@@ -1005,7 +1005,7 @@ app.post('/api/bridge/inject', async (req, res) => {
 });
 
 
-// ---- tmux 桥聊天：直连蟹堡窗口（多窗口，win=guchuan|workbench|device）----
+// ---- tmux 桥聊天：直连蟹堡窗口（多窗口，win=xixi|workbench|device）----
 app.get('/api/bridge/windows', (_req, res) => {
   res.json({ windows: bridgeChat.listWindows() });
 });
@@ -1054,14 +1054,14 @@ app.post('/api/bridge/chat/send', (req, res) => {
     durationMs: Number(req.body.voice.durationMs),
     prosodyLabel: String(req.body.voice.prosodyLabel || '') || null,
     state: 'transcribed',
-    source: 'paihome-call-asr',
+    source: 'xixihome-call-asr',
     rawAudioRetained: false,
   } : null;
-  let payload = `[PaiHome ${hh}:${mm}]`;
+  let payload = `[XixiHome ${hh}:${mm}]`;
   if (image) {
     // 注入窗口的是主机本地路径，claude/codex 直接 Read；前端只见 URL
     const local = join(MEDIA_DIR, image.url.split('/').pop());
-    payload += ` [小雨发来图片：${local}${image.name ? `（${image.name}）` : ''}]`;
+    payload += ` [邓邓发来图片：${local}${image.name ? `（${image.name}）` : ''}]`;
   }
   if (voice) {
     // 语音消息注入两行可读文本：第一行声音状态标签，第二行完整转写
@@ -1075,11 +1075,11 @@ app.post('/api/bridge/chat/send', (req, res) => {
   const extra = {};
   if (image) extra.image = image;
   if (voice) extra.voice = voice;
-  const rec = bridgeChat.append(win, 'user', text, 'paihome', Object.keys(extra).length ? extra : undefined);
+  const rec = bridgeChat.append(win, 'user', text, 'xixihome', Object.keys(extra).length ? extra : undefined);
   res.json({ ok: true, record: rec });
 });
 
-// PostToolUse hook 回传工具调用（scripts/paihome-tool-hook.sh 调用，token 鉴权）
+// PostToolUse hook 回传工具调用（scripts/xixihome-tool-hook.sh 调用，token 鉴权）
 // body: { win?, name, detail?, status: 'ok'|'error', output? }
 app.post('/api/bridge/tool', express.json({ limit: '1mb' }), (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '');
@@ -1099,7 +1099,7 @@ app.post('/api/bridge/tool', express.json({ limit: '1mb' }), (req, res) => {
 // Claude 窗口模型/推理强度：注入 /model /effort，设置按窗口持久
 // 列表可用 BRIDGE_CLAUDE_MODELS 覆盖（格式 id|显示名|说明,逗号分隔;更多模型加 * 前缀）
 const CLAUDE_MODELS = (process.env.BRIDGE_CLAUDE_MODELS || [
-  'claude-opus-4-6|Opus 4.6|顾川的常驻外壳',
+  'claude-opus-4-6|Opus 4.6|晞晞的常驻外壳',
   'claude-sonnet-4-6|Sonnet 4.6|智能与速度的平衡',
   'claude-fable-5|Fable 5|最强能力 · 长程工作',
   'claude-haiku-4-5|Haiku 4.5|更快、更轻量',
@@ -1179,8 +1179,8 @@ app.post('/api/bridge/approvals/decide', (req, res) => {
   res.json({ ok: true });
 });
 
-// 窗口侧发图：顾川/Codex 给一个主机本地路径，后端搬进 media 库再落聊天
-// （scripts/paihome-send-image.sh 调用，token 鉴权；前端只见 /bridge-media URL）
+// 窗口侧发图：晞晞/Codex 给一个主机本地路径，后端搬进 media 库再落聊天
+// （scripts/xixihome-send-image.sh 调用，token 鉴权；前端只见 /bridge-media URL）
 app.post('/api/bridge/send-image', express.json({ limit: '256kb' }), async (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '');
   const expected = process.env.BRIDGE_MACHINE_TOKEN || process.env.BRIDGE_WEBHOOK_TOKEN || '';
@@ -1205,7 +1205,7 @@ app.post('/api/bridge/send-image', express.json({ limit: '256kb' }), async (req,
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
-// Stop hook 回传顾川的回复（scripts/paihome-stop-hook.sh 调用，token 鉴权）
+// Stop hook 回传晞晞的回复（scripts/xixihome-stop-hook.sh 调用，token 鉴权）
 app.post('/api/bridge/reply', express.json({ limit: '2mb' }), (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '');
   const expected = process.env.BRIDGE_MACHINE_TOKEN || process.env.BRIDGE_WEBHOOK_TOKEN || '';
@@ -1268,7 +1268,7 @@ app.use((err, _req, res, _next) => {
 });
 
 const httpServer = app.listen(cfg.port, () => {
-  console.log(`💡 PaiHome 后端已运行于 http://localhost:${cfg.port}`);
+  console.log(`💡 XixiHome 后端已运行于 http://localhost:${cfg.port}`);
   console.log(`   模型默认：${cfg.provider} / ${cfg.model}　钥匙：${cfg.apiKey ? '已配' : '缺！去配置页或 Render 配 MODEL_API_KEY'}`);
 
   setInterval(() => {

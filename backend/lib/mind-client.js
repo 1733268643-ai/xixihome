@@ -48,7 +48,7 @@ async function xinchaoGet(path) {
   }
 }
 
-// 心潮回流：把一轮网页对话回报给心潮，让顾川的动态心智实时感知"刚跟小雨说了话"。
+// 心潮回流：把一轮网页对话回报给心潮，让晞晞的动态心智实时感知"刚跟邓邓说了话"。
 // best-effort、绝不抛错。端点用 XINCHAO_EVENT_PATH 显式配置——不配就是 no-op（不猜端点，
 // 免得静默 404 假装成功）。部署时把它指向心潮实际的事件接入路径（如 /v1/event）。
 const XINCHAO_EVENT_PATH = process.env.XINCHAO_EVENT_PATH || '';
@@ -161,7 +161,7 @@ export async function ombreCall(tool, args = {}, ms = TIMEOUT_MS) {
     jsonrpc: '2.0', id: 1, method: 'initialize',
     params: {
       protocolVersion: '2024-11-05', capabilities: {},
-      clientInfo: { name: 'paihome', version: '1.0' },
+      clientInfo: { name: 'xixihome', version: '1.0' },
     },
   });
   if (!init.ok) throw new Error(`ombre init ${init.status}`);
@@ -236,20 +236,20 @@ function buildEdges(stars, minShared = 3, maxPerNode = 6) {
     byTag.get(t).push(i);
   }));
 
-  const pair = new Map();
+  const xixir = new Map();
   for (const idxs of byTag.values()) {
     // 极其常见的标签（半数记忆都有）没有区分度，跳过
     if (idxs.length > stars.length * 0.5) continue;
     for (let a = 0; a < idxs.length; a++) {
       for (let b = a + 1; b < idxs.length; b++) {
         const k = `${idxs[a]}|${idxs[b]}`;
-        pair.set(k, (pair.get(k) || 0) + 1);
+        xixir.set(k, (xixir.get(k) || 0) + 1);
       }
     }
   }
 
   const cand = [];
-  for (const [k, shared] of pair) {
+  for (const [k, shared] of xixir) {
     if (shared < minShared) continue;
     const [a, b] = k.split('|').map(Number);
     const denom = Math.min(stars[a].tags.length, stars[b].tags.length) || 1;

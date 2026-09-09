@@ -1,28 +1,28 @@
 // 模型调用层：支持 Claude（Anthropic 原生）、OpenAI 兼容接口（DeepSeek / OpenAI / 中转），
-// 以及 provider='claude-cli' —— 直接起本机 `claude -p` 子进程当聊天后端（顾川跑在 Claude Code 上）。
+// 以及 provider='claude-cli' —— 直接起本机 `claude -p` 子进程当聊天后端（晞晞跑在 Claude Code 上）。
 
 import { spawn } from 'node:child_process';
 
 const ANTHROPIC_VERSION = '2023-06-01';
 
 // —— claude -p（Claude Code CLI）后端 ——
-// 设计：paihome 仍然自己管会话和记忆（每轮把 persona+浮现记忆拼进 --system-prompt，
+// 设计：xixihome 仍然自己管会话和记忆（每轮把 persona+浮现记忆拼进 --system-prompt，
 // 上下文拼进 prompt 走 stdin）。所以这里是无状态的——不用 claude 的 session/--resume，
-// 反而正好配合 paihome 的"按轮浮现记忆"注入。
+// 反而正好配合 xixihome 的"按轮浮现记忆"注入。
 
-// 默认屏蔽的工具：顾川是聊天伴侣，不该动文件/跑命令。部署时可用 CLAUDE_CLI_DISALLOWED_TOOLS 覆盖。
+// 默认屏蔽的工具：晞晞是聊天伴侣，不该动文件/跑命令。部署时可用 CLAUDE_CLI_DISALLOWED_TOOLS 覆盖。
 const DEFAULT_DISALLOWED_TOOLS = [
   'Bash', 'Edit', 'Write', 'Read', 'Glob', 'Grep',
   'WebFetch', 'WebSearch', 'Task', 'NotebookEdit', 'TodoWrite',
 ];
 
-// paihome 的 messages 数组 → 给 claude -p 的单条 prompt。
+// xixihome 的 messages 数组 → 给 claude -p 的单条 prompt。
 // claude -p 只吃一条 prompt，所以拼成对话记录；身份/回应规则由 --system-prompt（persona）建立，
-// 最后一句是小雨要回应的话。content 可能是字符串或 [{type,text|image_url}]（图片这里降级成占位）。
+// 最后一句是邓邓要回应的话。content 可能是字符串或 [{type,text|image_url}]（图片这里降级成占位）。
 function renderTranscript(messages) {
   return (messages || [])
     .map((m) => {
-      const who = m.role === 'user' ? '小雨' : '顾川';
+      const who = m.role === 'user' ? '邓邓' : '晞晞';
       const text = typeof m.content === 'string'
         ? m.content
         : (m.content || []).map((c) => (c.type === 'text' ? c.text : '［图片］')).join(' ');
@@ -185,10 +185,10 @@ export async function chatComplete({
 // 把一段旧对话压缩成简短摘要，存进长期记忆。
 export async function summarize({ provider, apiKey, baseUrl, model, rounds }) {
   const transcript = rounds
-    .map((m) => `${m.role === 'user' ? '小雨' : '顾川'}：${m.content}`)
+    .map((m) => `${m.role === 'user' ? '邓邓' : '晞晞'}：${m.content}`)
     .join('\n');
   const system =
-    '你是一个记忆整理助手。把下面顾川和小雨的对话压缩成一段简短的第三人称摘要，' +
+    '你是一个记忆整理助手。把下面晞晞和邓邓的对话压缩成一段简短的第三人称摘要，' +
     '只保留对以后相处有用的事实、约定、情绪和细节，去掉寒暄。不超过200字。';
   return chatComplete({
     provider,

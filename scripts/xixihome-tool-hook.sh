@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Claude Code PostToolUse hook：将 tmux 窗口的工具调用抄送到 PaiHome 桥。
-# 只在 tmux 会话 ${BRIDGE_TMUX_SESSION:-paihome} 中生效。
+# Claude Code PostToolUse hook：将 tmux 窗口的工具调用抄送到 XixiHome 桥。
+# 只在 tmux 会话 ${BRIDGE_TMUX_SESSION:-xixihome} 中生效。
 set -u
-SESSION_WANT="${BRIDGE_TMUX_SESSION:-paihome}"
+SESSION_WANT="${BRIDGE_TMUX_SESSION:-xixihome}"
 [ -n "${TMUX:-}" ] || exit 0
 CUR=$(tmux display-message -p '#S' 2>/dev/null) || exit 0
 [ "$CUR" = "$SESSION_WANT" ] || exit 0
 
-ROOT_DIR="${PAIHOME_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+ROOT_DIR="${XIXIHOME_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 TOKEN=$(grep -m1 '^BRIDGE_MACHINE_TOKEN=' "$ROOT_DIR/backend/.env" 2>/dev/null | cut -d= -f2-)
 [ -n "$TOKEN" ] || exit 0
 
 HOOK_JSON=$(cat 2>/dev/null || echo "{}")
-export HOOK_JSON TOKEN CUR PAIHOME_API_URL
+export HOOK_JSON TOKEN CUR XIXIHOME_API_URL
 python3 - <<'PY'
 import json, os, urllib.request
 
@@ -51,7 +51,7 @@ body = json.dumps({
 }).encode()
 
 req = urllib.request.Request(
-    os.environ.get("PAIHOME_API_URL", "http://127.0.0.1:3001") + "/api/bridge/tool", data=body,
+    os.environ.get("XIXIHOME_API_URL", "http://127.0.0.1:3001") + "/api/bridge/tool", data=body,
     headers={"content-type": "application/json",
              "authorization": "Bearer " + os.environ["TOKEN"]})
 try:

@@ -6,7 +6,7 @@ export const installedTools = [
   {
     name: 'activity',
     path: '/api/tools/activity',
-    description: '读取小雨最近打开过哪些 App',
+    description: '读取邓邓最近打开过哪些 App',
   },
 ];
 

@@ -1,4 +1,4 @@
-// 工具库：只读读取小雨的手机 App 使用记录。
+// 工具库：只读读取邓邓的手机 App 使用记录。
 // iOS 快捷指令负责写入 Supabase phone_activity；这里不提供任何写入/修改/删除能力。
 import { createClient } from '@supabase/supabase-js';
 
