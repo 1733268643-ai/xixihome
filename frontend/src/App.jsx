@@ -473,7 +473,7 @@ export default function App() {
         <div className="drawer on">
           <div className="mask" onClick={() => setDrawer(false)} />
           <div className="panel">
-            <div className="pair">
+            <div className="xixir">
               <div className="av">
                 <span onClick={() => pickAvatar('xixi')} title="换晞晞的头像"
                   style={{ color: '#D97757', cursor: 'pointer', overflow: 'hidden' }}>
