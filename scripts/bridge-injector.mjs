@@ -14,7 +14,7 @@ rl.on('line', async (line) => {
       ...data,
       timestamp: new Date().toISOString()
     };
-    await appendFile(process.env.BRIDGE_INBOX || '/tmp/paihome-bridge-inbox.jsonl', JSON.stringify(entry) + '\n', 'utf8');
+    await appendFile(process.env.BRIDGE_INBOX || '/tmp/xixihome-bridge-inbox.jsonl', JSON.stringify(entry) + '\n', 'utf8');
     process.exit(0);
   } catch (err) {
     process.exit(1);

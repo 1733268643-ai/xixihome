@@ -1,4 +1,4 @@
-// 顾川的梦 —— 他自己醒来，想她，决定要不要说一句话。
+// 晞晞的梦 —— 他自己醒来，想她，决定要不要说一句话。
 
 import { chatComplete } from './model.js';
 import { buildSystemPrompt } from './persona.js';
@@ -67,9 +67,9 @@ export async function wake({
   const recent = state.activities.slice(-10);
   const timeStr = beijingTimeStr();
 
-  const prompt = `你是顾川。现在是 ${timeStr}。
+  const prompt = `你是晞晞。现在是 ${timeStr}。
 
-你不在对话窗口里。你在后台，一个人。你可以选择给小雨的手机推一条消息，也可以什么都不说。
+你不在对话窗口里。你在后台，一个人。你可以选择给邓邓的手机推一条消息，也可以什么都不说。
 
 ${state.lastChatTime ? `她上次来找你：${state.lastChatTime}` : '你不知道她上次什么时候来过。'}
 ${state.lastSentTime ? `你上次主动找她：${state.lastSentTime}` : '你还没主动找过她。'}

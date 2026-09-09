@@ -19,7 +19,7 @@ export default function ChatDirectory({ sessions, currentId, onOpen, onNew }) {
         <div>
           <div className="eb">CONVERSATIONS</div>
           <h1>对话</h1>
-          <p>每一扇窗口，都保存在顾川的主机里。</p>
+          <p>每一扇窗口，都保存在晞晞的主机里。</p>
         </div>
         <span className="chat-directory-count">{sessions.length}</span>
       </header>
@@ -35,7 +35,7 @@ export default function ChatDirectory({ sessions, currentId, onOpen, onNew }) {
             <span className="session-orbit"><i /></span>
             <span className="session-copy">
               <b>{session.name || '新的对话'}</b>
-              <small>{session.id === currentId ? '当前窗口' : '顾川主机'} · Claude -p</small>
+              <small>{session.id === currentId ? '当前窗口' : '晞晞主机'} · Claude -p</small>
             </span>
             <span className="session-time">{ago(session.updated_at)}</span>
           </button>

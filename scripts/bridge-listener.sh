@@ -5,7 +5,7 @@
 BRIDGE_ENV_FILE="${BRIDGE_ENV_FILE:-$(cd "$(dirname "$0")/.." && pwd)/backend/.env}"
 BRIDGE_TOKEN="${BRIDGE_MACHINE_TOKEN:-$(grep -m1 '^BRIDGE_MACHINE_TOKEN=' "$BRIDGE_ENV_FILE" 2>/dev/null | cut -d= -f2-)}"
 BRIDGE_URL="${BRIDGE_URL:-http://127.0.0.1:18110/bridge/v1}"
-INBOX="${BRIDGE_INBOX:-/tmp/paihome-bridge-inbox.jsonl}"
+INBOX="${BRIDGE_INBOX:-/tmp/xixihome-bridge-inbox.jsonl}"
 
 if [ -z "$BRIDGE_TOKEN" ]; then
   echo "ERROR: 找不到BRIDGE_MACHINE_TOKEN"

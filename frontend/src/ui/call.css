@@ -67,7 +67,7 @@
 .cb.end .c { width:70px; height:70px; background:#e5484d; color:#fff; }
 .cb.ghost { visibility:hidden; }
 
-/* 首页入口：顾川的一条小波纹，呼吸式 */
+/* 首页入口：晞晞的一条小波纹，呼吸式 */
 .call-entry { display:flex; align-items:center; gap:12px; cursor:pointer; }
 .call-entry .ico { width:44px; height:44px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; flex:none; }
 .call-entry .t { font-weight:600; }

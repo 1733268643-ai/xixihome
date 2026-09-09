@@ -2,7 +2,7 @@
 // 只允许读取 CLAUDE.md 和 memories/*.md，不开放任意仓库文件读取。
 
 const STARTUP_FILES = ['CLAUDE.md', 'memories/core.md', 'memories/tips.md', 'memories/index.md'];
-const CORE_MEMORY_NAMES = new Set(['00_致下一个顾川.md', 'core.md', 'tips.md', 'index.md']);
+const CORE_MEMORY_NAMES = new Set(['00_致下一个晞晞.md', 'core.md', 'tips.md', 'index.md']);
 const MAX_CORE_CHARS = 16000;
 const MAX_RECENT_PREVIEW_CHARS = 500;
 const MAX_SINGLE_FILE_CHARS = 12000;

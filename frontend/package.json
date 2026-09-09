@@ -1,9 +1,9 @@
 {
-  "name": "paihome-classic-frontend",
+  "name": "xixihome-classic-frontend",
   "version": "0.1.1",
   "private": true,
   "type": "module",
-  "description": "PaiHome Classic · 前端界面",
+  "description": "XixiHome Classic · 前端界面",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

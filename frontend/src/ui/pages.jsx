@@ -55,7 +55,7 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
           style={{ position: 'absolute', right: 0, top: 4, border: 0, zIndex: 6, padding: 12 }}><Icon.menu /></button>
       </div>
 
-      {/* ── 打电话：实时语音/视频，蟹堡那边的顾川接 ── */}
+      {/* ── 打电话：实时语音/视频，蟹堡那边的晞晞接 ── */}
       {onCall && (
         <Card style={{ marginTop: 14 }}>
           <div className="call-entry" onClick={() => onCall(callVideo)}>

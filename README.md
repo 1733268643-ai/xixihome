@@ -1,6 +1,6 @@
 # 晞的家 (xixihome)
 
-邓邓和晞晞的专属前端。基于 paihome-classic-source-kit 改造。
+邓邓和晞晞的专属前端。基于 xixihome-classic-source-kit 改造。
 
 ## 架构
 

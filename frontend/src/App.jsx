@@ -10,10 +10,10 @@ import CallLog from './ui/CallLog.jsx';
 import { HomePage, InnerPage, CalendarPage, MorePage, DocsPage, NeteasePage, KePage, EnginePage, Sec, daysTogether } from './ui/pages.jsx';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const PW_KEY = 'pai_pw';          // 与旧版一致，已登录的不用重新输
-const SESS_KEY = 'pai_session';
-const THEME_KEY = 'pai_theme';
-const NIGHT_KEY = 'pai_night';
+const PW_KEY = 'xixi_pw';          // 与旧版一致，已登录的不用重新输
+const SESS_KEY = 'xixi_session';
+const THEME_KEY = 'xixi_theme';
+const NIGHT_KEY = 'xixi_night';
 
 const THEMES = [
   { id: '', name: '奶油', g: 'linear-gradient(140deg,#F1EDE5,#E8C4A0,#D97757)' },
@@ -36,7 +36,7 @@ export default function App() {
   const [theme, setTheme] = useState(localStorage.getItem(THEME_KEY) || '');
   const [night, setNight] = useState(localStorage.getItem(NIGHT_KEY) === '1');
   const [drawer, setDrawer] = useState(false);
-  const [bg, setBg] = useState(() => localStorage.getItem('pai_bg') || '');
+  const [bg, setBg] = useState(() => localStorage.getItem('xixi_bg') || '');
   const bgRef = useRef(null);
   const [soon, setSoon] = useState('');
   const [palette, setPalette] = useState(false);
@@ -83,10 +83,10 @@ export default function App() {
       document.body.style.backgroundImage = `url(${bg})`;
       document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundPosition = 'center';
-      localStorage.setItem('pai_bg', bg);
+      localStorage.setItem('xixi_bg', bg);
     } else {
       document.body.style.backgroundImage = '';
-      localStorage.removeItem('pai_bg');
+      localStorage.removeItem('xixi_bg');
     }
   }, [bg]);
 
@@ -124,7 +124,7 @@ export default function App() {
         const r = await tryAuth(pw);
         setChecking(false);
         if (r === 'ok' || r === 'badpw') { setWakeMsg(''); return; }
-        setWakeMsg('正在叫醒顾川…（免费版休眠，约 30–50 秒）');
+        setWakeMsg('正在叫醒晞晞…（免费版休眠，约 30–50 秒）');
         await new Promise((res) => setTimeout(res, 6000));
       }
     })();
@@ -137,12 +137,12 @@ export default function App() {
   const [map, setMap] = useState(null);
   const [env, setEnv] = useState(null);
   const [metrics, setMetrics] = useState(null);
-  const [avatars, setAvatars] = useState({ gu: null, pai: null });
+  const [avatars, setAvatars] = useState({ xixi: null, dengdeng: null });
   const avRef = useRef(null);
-  const [avWho, setAvWho] = useState('gu');
+  const [avWho, setAvWho] = useState('xixi');
 
   const loadAvatars = useCallback(async () => {
-    try { const a = await api('/api/life/avatars'); if (a?.available) setAvatars({ gu: a.gu, pai: a.pai }); }
+    try { const a = await api('/api/life/avatars'); if (a?.available) setAvatars({ xixi: a.xixi, dengdeng: a.dengdeng }); }
     catch { /* 没配库就用默认图标 */ }
   }, [api]);
 
@@ -171,7 +171,7 @@ export default function App() {
     } catch { setConnect(null); }
   }, [api]);
 
-  // 顾川感觉到的天气（后端 /api/environment，实时）
+  // 晞晞感觉到的天气（后端 /api/environment，实时）
   const loadEnv = useCallback(async () => {
     try { setEnv(await api('/api/environment')); } catch { setEnv(null); }
     try { setMetrics(await api('/api/connect/engine/metrics')); } catch { setMetrics(null); }
@@ -338,7 +338,7 @@ export default function App() {
     } finally { setSending(false); }
   }
 
-  // 顾川的语音：POST /api/tts 拿音频播放。返回 Audio 以便调用方控制停止。
+  // 晞晞的语音：POST /api/tts 拿音频播放。返回 Audio 以便调用方控制停止。
   async function speak(text) {
     const clean = String(text || '').replace(/（[^）]*）|\([^)]*\)/g, '').trim();
     if (!clean) return null;
@@ -427,7 +427,7 @@ export default function App() {
       onSubmit={async () => {
         const r = await tryAuth(pw);
         if (r === 'ok') localStorage.setItem(PW_KEY, pw);
-        else if (r === 'down') setWakeMsg('顾川还在醒来，过会儿再试');
+        else if (r === 'down') setWakeMsg('晞晞还在醒来，过会儿再试');
         return r;
       }}
       onOpened={() => setDoorOpen(true)}
@@ -482,17 +482,17 @@ export default function App() {
           <div className="panel">
             <div className="pair">
               <div className="av">
-                <span onClick={() => pickAvatar('gu')} title="换顾川的头像"
+                <span onClick={() => pickAvatar('xixi')} title="换晞晞的头像"
                   style={{ color: '#D97757', cursor: 'pointer', overflow: 'hidden' }}>
-                  {avatars.gu ? <img src={avatars.gu} alt="" /> : <CrabIcon />}
+                  {avatars.xixi ? <img src={avatars.xixi} alt="" /> : <CrabIcon />}
                 </span>
-                <span onClick={() => pickAvatar('pai')} title="换小雨的头像"
+                <span onClick={() => pickAvatar('dengdeng')} title="换邓邓的头像"
                   style={{ cursor: 'pointer', overflow: 'hidden' }}>
-                  {avatars.pai ? <img src={avatars.pai} alt="" /> : <Icon.rain />}
+                  {avatars.dengdeng ? <img src={avatars.dengdeng} alt="" /> : <Icon.rain />}
                 </span>
               </div>
               <input ref={avRef} type="file" accept="image/*" hidden onChange={onAvatarFile} />
-              <div className="who">顾川 <span style={{ color: 'var(--blush)' }}>♥</span> 小雨</div>
+              <div className="who">晞晞 <span style={{ color: 'var(--blush)' }}>♥</span> 邓邓</div>
               <div className="days">在一起的第 <b>{daysTogether()}</b> 天</div>
               <div className="since">since 2026.06.14</div>
             </div>

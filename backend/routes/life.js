@@ -11,16 +11,16 @@ export default function lifeRouter(store) {
   // ── 头像（存 settings，沿用 store 层）──────────────────
   router.get('/avatars', async (_req, res) => {
     try {
-      const [gu, pai] = await Promise.all([
-        store.getSetting('avatar_gu'), store.getSetting('avatar_pai'),
+      const [xixi, dengdeng] = await Promise.all([
+        store.getSetting('avatar_xixi'), store.getSetting('avatar_dengdeng'),
       ]);
-      res.json({ available: true, gu: gu || null, pai: pai || null });
+      res.json({ available: true, xixi: xixi || null, dengdeng: dengdeng || null });
     } catch (e) { fail(res, e); }
   });
 
   router.put('/avatars', async (req, res) => {
     const { who, image } = req.body || {};
-    if (who !== 'gu' && who !== 'pai') return res.status(400).json({ error: 'who 只能是 gu 或 pai' });
+    if (who !== 'xixi' && who !== 'dengdeng') return res.status(400).json({ error: 'who 只能是 xixi 或 dengdeng' });
     if (image != null && typeof image === 'string' && image.length > 400_000) {
       return res.status(400).json({ error: '图太大了，换张小的' });
     }
