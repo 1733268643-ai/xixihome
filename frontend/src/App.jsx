@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import './styles.css';
 import './theme.css';   // 后加载：主题层覆盖旧样式的 .app/.gate
 import './config.css';
 import { Icon, CrabIcon, CrabMascot } from './ui/icons.jsx';
@@ -8,7 +7,6 @@ import ChatDirectory from './ui/ChatDirectory.jsx';
 import Gate from './ui/Gate.jsx';
 import Call from './ui/Call.jsx';
 import CallLog from './ui/CallLog.jsx';
-import CodexChat from './ui/CodexChat.jsx';
 import { HomePage, InnerPage, CalendarPage, MorePage, DocsPage, NeteasePage, KePage, EnginePage, Sec, daysTogether } from './ui/pages.jsx';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
@@ -454,7 +452,6 @@ export default function App() {
         {tab === 'inner' && <InnerPage mind={mind} memories={memories} memQuery={memQuery}
           onSearch={searchMem} searching={searching} tab={innerTab} setTab={setInnerTab}
           map={map} onReadMemory={readMemory} />}
-        {tab === 'chat' && <CodexChat api={api} onBack={() => setTab('home')} />}
         {tab === 'cal' && <CalendarPage map={map} events={events} ym={ym} onYm={setYm} onAdd={addEvent} onDel={delEvent} />}
         {tab === 'more' && <MorePage sources={sources} connect={connect} reading={reading} netease={netease} onGo={(v) => (v === 'docs' ? openDocs() : setTab(v))}
           onSync={syncMemory} syncing={syncing} docs={docs} />}

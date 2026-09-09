@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import StarMap from './StarMap.jsx';
-import { CRAB_FACES, CrabFace } from './crab-faces.jsx';
 import { Icon, CrabIcon } from './icons.jsx';
 import Flower from './Flower.jsx';
 import { CI } from './call-icons.jsx';
@@ -522,14 +521,12 @@ export function EnginePage({ sources, connect, map, ke, health, metrics, onBack,
 }
 
 /* ═══ 小克房间 ═══ */
-// 表情用 crab-faces.jsx 里那 16 张脸，与设备屏幕一一对应
 
 export function KePage({ api, onBack }) {
   const [ke, setKe] = useState(null);
   const [sayTxt, setSayTxt] = useState('');
   const [busy, setBusy] = useState('');
   const [photo, setPhoto] = useState(null);
-  const [face, setFace] = useState('idle');
 
   const load = async () => {
     try { setKe(await api('/api/connect/ke/status')); } catch { setKe({ available: false }); }
@@ -572,20 +569,6 @@ export function KePage({ api, onBack }) {
               <span className="r">{info.network?.ssid || '—'} · {info.network?.signal || ''}</span></div>
           </>
         )}
-      </Card>
-
-      <Sec more={online ? '和他屏幕上一样' : '他在线时可点'}>表情</Sec>
-      <Card>
-        <div className="kegrid">
-          {CRAB_FACES.map((f) => (
-            <button key={f.key} className={`keface${face === f.key ? ' on' : ''}`}
-              disabled={!online || !!busy} title={f.name}
-              onClick={async () => { setFace(f.key); await call('set_avatar', { face: f.key }, f.key); }}>
-              <CrabFace face={f.key} size={34} />
-              <span>{f.name}</span>
-            </button>
-          ))}
-        </div>
       </Card>
 
       {online && (
