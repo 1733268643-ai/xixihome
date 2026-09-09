@@ -53,7 +53,7 @@ export class VoiceCall {
       floor: 0.006,        // 最低噪声底
       gain: 3.2,           // 进入阈值 = max(floor, 噪声底 * gain)
       exitRatio: 0.62,     // 结束阈值 = 进入阈值 * 这个（双阈值，防止悬在临界卡住）
-      speakingGain: 2.8,   // 顾川说话时再提高门槛，降低扬声器误触
+      speakingGain: 2.8,   // 晞晞说话时再提高门槛，降低扬声器误触
       watchdogMs: 1600,    // 这么久没有一块声音超过进入阈值 → 强制收尾（AGC 把环境音抬高也不会卡）
     }, vad);
 

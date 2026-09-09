@@ -1,5 +1,5 @@
 // 从 GitHub main 拉取最新人格和记忆到当前部署实例。
-// 用于 Codex 写入 memories/ 后，让 Pai's Home 不必重新部署也能刷新记忆。
+// 用于 Codex 写入 memories/ 后，让 Xixi's Home 不必重新部署也能刷新记忆。
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

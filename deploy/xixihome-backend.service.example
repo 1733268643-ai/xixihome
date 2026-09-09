@@ -1,0 +1,17 @@
+[Unit]
+Description=XixiHome Classic backend
+After=network.target
+
+[Service]
+Type=simple
+User=xixihome
+WorkingDirectory=/opt/xixihome-classic/backend
+EnvironmentFile=/opt/xixihome-classic/backend/.env
+ExecStart=/usr/bin/node /opt/xixihome-classic/backend/server.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

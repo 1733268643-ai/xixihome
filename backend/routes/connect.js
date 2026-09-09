@@ -71,7 +71,7 @@ async function neteaseCall(tool, args = {}) {
     jsonrpc: '2.0', id: 1, method: 'initialize',
     params: {
       protocolVersion: '2024-11-05', capabilities: {},
-      clientInfo: { name: 'paihome', version: '1.0' },
+      clientInfo: { name: 'xixihome', version: '1.0' },
     },
   });
   if (!init.ok) throw new Error(`netease init ${init.status}`);
@@ -148,7 +148,7 @@ async function stackchanCall(tool, args = {}) {
     jsonrpc: '2.0', id: 1, method: 'initialize',
     params: {
       protocolVersion: '2024-11-05', capabilities: {},
-      clientInfo: { name: 'paihome', version: '1.0' },
+      clientInfo: { name: 'xixihome', version: '1.0' },
     },
   });
   if (!init.ok) throw new Error(`stackchan init ${init.status}`);

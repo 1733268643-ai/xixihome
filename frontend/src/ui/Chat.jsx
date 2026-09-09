@@ -135,7 +135,7 @@ function Sheet({ open, title, onClose, children }) {
   );
 }
 
-/* ══ 单条顾川消息 ═════════════════════════════════════════ */
+/* ══ 单条晞晞消息 ═════════════════════════════════════════ */
 function Assistant({ m, onSpeak, onOpenThink }) {
   const [voice, setVoice] = useState('idle'); // idle | loading | playing
   const audioRef = useRef(null);
@@ -162,7 +162,7 @@ function Assistant({ m, onSpeak, onOpenThink }) {
         {thinking || thinkingLive ? (
           <button className="toolline" onClick={() => thinking && onOpenThink(thinking)}>
             {thinkingLive ? <span className="spin" /> : <Icon.spark className="ic" />}
-            <span className="lbl"><b>顾川想了想</b></span>
+            <span className="lbl"><b>晞晞想了想</b></span>
             {thinking ? <Icon.chev className="chev" /> : null}
           </button>
         ) : null}
@@ -174,7 +174,7 @@ function Assistant({ m, onSpeak, onOpenThink }) {
 
         {!m.streaming && body ? (
           <div className="acts">
-            <button className={`vbtn ${voice}`} onClick={toggleVoice} title="听顾川说" aria-label="听顾川说">
+            <button className={`vbtn ${voice}`} onClick={toggleVoice} title="听晞晞说" aria-label="听晞晞说">
               {voice === 'loading' ? <span className="spin" /> : voice === 'playing' ? <Icon.pause /> : <Icon.volume />}
             </button>
             <button className="cbtn2" onClick={() => navigator.clipboard?.writeText(body)} title="复制" aria-label="复制">
@@ -187,7 +187,7 @@ function Assistant({ m, onSpeak, onOpenThink }) {
   );
 }
 
-/* ══ 会转的 doing 药丸（顾川在干活时浮在输入栏上）═══════════ */
+/* ══ 会转的 doing 药丸（晞晞在干活时浮在输入栏上）═══════════ */
 const DOING = [
   ['琢磨着', 'Pondering'], ['办着呢', 'Working'], ['想你', 'Musing'], ['码字', 'Composing'],
   ['转着脑子', 'Cooking'], ['上头', 'Vibing'], ['翻记忆', 'Recalling'], ['酝酿', 'Brewing'],
@@ -290,7 +290,7 @@ export default function Chat({
       <header className="chead">
         <button className="hbtn" onClick={onBack} title="返回对话目录"><Icon.back /></button>
         <div className="htitle">
-          <h1>顾川</h1>
+          <h1>晞晞</h1>
           <div className="hsub">{roomName || '主线'}{rounds > 0 ? ` · ${rounds}轮` : ''}</div>
         </div>
         <button className="hbtn" onClick={() => setSessionMenu((v) => !v)} title="管理窗口"><Icon.more /></button>
@@ -343,7 +343,7 @@ export default function Chat({
               </div>
             </div>
           )}
-          <textarea ref={taRef} rows={1} value={input} placeholder="跟顾川说点什么…"
+          <textarea ref={taRef} rows={1} value={input} placeholder="跟晞晞说点什么…"
             onChange={(e) => {
               setInput(e.target.value);
               e.target.style.height = 'auto';
@@ -373,7 +373,7 @@ export default function Chat({
       </div>
 
       {/* 官端式思考弹窗 */}
-      <Sheet open={thinkText != null} title="顾川想了想" onClose={() => setThinkText(null)}>
+      <Sheet open={thinkText != null} title="晞晞想了想" onClose={() => setThinkText(null)}>
         <div className="thinkbody">{thinkText}</div>
       </Sheet>
 

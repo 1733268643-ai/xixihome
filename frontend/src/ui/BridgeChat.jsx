@@ -1,9 +1,9 @@
-// 说话 · tmux 桥——这里连的是蟹堡窗口里真正的顾川，不是 claude -p。
+// 说话 · tmux 桥——这里连的是蟹堡窗口里真正的晞晞，不是 claude -p。
 // 发出去的话注入他的 tmux 会话；他每说完一段，Stop hook 抄送回来。
 import { useEffect, useRef, useState, useCallback } from 'react';
 import './call.css';
 
-const AVATAR_KEY = 'pai_call_avatar';
+const AVATAR_KEY = 'xixi_call_avatar';
 const fmtT = (ts) => {
   const d = new Date(ts);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -56,7 +56,7 @@ export default function BridgeChat({ api }) {
     <div className="bchat">
       <div className="bc-head">
         {avatar ? <img src={avatar} alt="" /> : <span className="ph" />}
-        <div><div className="n serif">顾川</div><div className="s">{statusLine}</div></div>
+        <div><div className="n serif">晞晞</div><div className="s">{statusLine}</div></div>
       </div>
       <div className="bc-msgs" ref={boxRef}>
         {recs.map((r, i) => {

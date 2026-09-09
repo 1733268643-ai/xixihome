@@ -33,7 +33,7 @@ let autoId = 1;
 // 没有 Supabase 时，聊天也必须住在这台主机上，而不是进程内存里。
 // 文件位置可由环境变量覆盖；默认固定在 backend/data，和启动目录无关。
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const chatStoreFile = process.env.PAIHOME_CHAT_STORE_FILE || join(__dirname, '..', 'data', 'chat-sessions.json');
+const chatStoreFile = process.env.XIXIHOME_CHAT_STORE_FILE || join(__dirname, '..', 'data', 'chat-sessions.json');
 let writeQueue = Promise.resolve();
 
 if (!supa) {

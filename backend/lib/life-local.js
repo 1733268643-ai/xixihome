@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FILE = process.env.PAIHOME_LIFE_STORE_FILE || join(__dirname, '..', 'data', 'life.json');
+const FILE = process.env.XIXIHOME_LIFE_STORE_FILE || join(__dirname, '..', 'data', 'life.json');
 
 const db = { events: [], health_logs: [] };
 try {

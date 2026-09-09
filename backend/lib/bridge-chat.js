@@ -1,12 +1,12 @@
-// tmux 桥：PaiHome 聊天直连蟹堡 tmux 窗口（多窗口版，2026-08-31）。
+// tmux 桥：XixiHome 聊天直连蟹堡 tmux 窗口（多窗口版，2026-08-31）。
 //
 //   发：她的话 → tmux load-buffer/paste-buffer + send-keys 注入对应会话
-//   收：claude 窗口用 Stop hook（scripts/paihome-stop-hook.sh）、
+//   收：claude 窗口用 Stop hook（scripts/xixihome-stop-hook.sh）、
 //       codex 窗口用 notify 钩子（scripts/codex-notify.sh），
 //       都 POST 到 /api/bridge/reply（带 win）落进各自历史
 //
 // 历史：backend/data/bridge-<win>.jsonl，一行一条 {ts, role, text, source}
-// 兼容：默认窗口 guchuan 沿用老文件 bridge-chat.jsonl；语音桥固定走 guchuan。
+// 兼容：默认窗口 xixi 沿用老文件 bridge-chat.jsonl；语音桥固定走 xixi。
 
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -19,10 +19,10 @@ const VOICE_ACTIVE = process.env.VOICE_ACTIVE_FLAG || '/tmp/voice-call-active';
 
 // 窗口注册表：kind 决定允许的 pane 程序
 export const WINDOWS = {
-  guchuan: {
-    session: process.env.BRIDGE_TMUX_SESSION || 'guchuan',
+  xixi: {
+    session: process.env.BRIDGE_TMUX_SESSION || 'xixi',
     kind: 'claude',
-    label: '顾川',
+    label: '晞晞',
     file: process.env.BRIDGE_CHAT_FILE || join(DATA, 'bridge-chat.jsonl'),
   },
   workbench: {
@@ -38,7 +38,7 @@ export const WINDOWS = {
     file: join(DATA, 'bridge-device.jsonl'),
   },
 };
-const DEFAULT_WIN = 'guchuan';
+const DEFAULT_WIN = 'xixi';
 const ALLOWED_PANES = { claude: ['claude', 'node'], codex: ['codex', 'node'] };
 
 export function resolveWin(win) {
@@ -54,7 +54,7 @@ export function typingOf(win) {
   if (!typings.has(key)) typings.set(key, { is: false, since: 0 });
   return typings.get(key);
 }
-// 兼容旧引用（voice-proxy 等直接摸 typing 的地方指向 guchuan）
+// 兼容旧引用（voice-proxy 等直接摸 typing 的地方指向 xixi）
 export const typing = typingOf(DEFAULT_WIN);
 
 function load(win) {
@@ -113,9 +113,9 @@ export function inject(win, text) {
   if (!ALLOWED_PANES[kind].includes(cmd)) {
     return { ok: false, error: `会话 ${session} 里跑的是 ${cmd || '未知'}，${kind} 没在里面` };
   }
-  const loaded = spawnSync('tmux', ['load-buffer', '-b', 'paihome', '-'], { input: text, encoding: 'utf8', timeout: 5000 });
+  const loaded = spawnSync('tmux', ['load-buffer', '-b', 'xixihome', '-'], { input: text, encoding: 'utf8', timeout: 5000 });
   if (loaded.status !== 0) return { ok: false, error: 'tmux load-buffer 失败: ' + loaded.stderr };
-  const pasted = tmux('paste-buffer', '-p', '-b', 'paihome', '-d', '-t', session);
+  const pasted = tmux('paste-buffer', '-p', '-b', 'xixihome', '-d', '-t', session);
   if (pasted.status !== 0) return { ok: false, error: 'tmux paste-buffer 失败: ' + pasted.stderr };
   // 回车前等粘贴被输入框完全吃进去：窗口忙时太快会把半截前缀发出去（2026-08-31 发生过）
   setTimeout(() => tmux('send-keys', '-t', session, 'Enter'), 900);
@@ -126,7 +126,7 @@ export function inject(win, text) {
 
 function voicePrompt(turn) {
   const prosody = turn.prosody?.label ? `\n语气参考：${turn.prosody.label}` : '';
-  const say = process.env.PAIVOICE_SAY_SCRIPT || 'scripts/pai-voice-say.sh';
+  const say = process.env.XIXIVOICE_SAY_SCRIPT || 'scripts/xixi-voice-say.sh';
   return `[PHONE CALL / turn ${turn.turnId}]\n用户正在电话里说：${turn.text}${prosody}\n\n请像电话里自然地简短回应。先执行：\n${say} "你的第一句" "${turn.turnId}"\n若还要说第二句，再执行一次；说完执行：\n${say} --done "${turn.turnId}"\n不要解释这套协议，也不要把命令或内部状态念给对方听。`;
 }
 

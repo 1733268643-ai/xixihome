@@ -1,9 +1,9 @@
 {
-  "name": "paihome-classic-backend",
+  "name": "xixihome-classic-backend",
   "version": "0.3.1",
   "private": true,
   "type": "module",
-  "description": "PaiHome Classic · 后端服务",
+  "description": "XixiHome Classic · 后端服务",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

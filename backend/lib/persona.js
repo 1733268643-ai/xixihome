@@ -40,7 +40,7 @@ export async function buildSystemPrompt() {
   try {
     parts.push(await readFile(join(REPO_ROOT, 'CLAUDE.md'), 'utf8'));
   } catch {
-    parts.push('# PaiHome 助手\n（未能读到 CLAUDE.md，请在部署根目录完成配置。）');
+    parts.push('# XixiHome 助手\n（未能读到 CLAUDE.md，请在部署根目录完成配置。）');
   }
 
   // 2) memories/ —— 默认省钱：核心记忆 + 索引 + 最近几篇日记。
