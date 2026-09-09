@@ -238,46 +238,6 @@ app.get('/api/activity', requireToolsSecret, handleActivityQuery);
 // ---- ChatGPT Actions 入口：独立鉴权，只转发白名单工具 ----
 app.use('/api/chat-actions', chatActionsRouter);
 
-// ---- 岸讯 · 晞晞亲笔信 ----
-// 晞晞在 tmux 里 curl 这个端点写信：现在走 Bark 推到邓邓手机，
-// PWA Web Push 接好后在同一处并行推原生通知（双通道），curl 用法不变。
-// 鉴权用独立 SHORE_TOKEN（.env），不用网页门锁密码。
-import { readFile as fsReadFile, writeFile as fsWriteFile, mkdir as fsMkdir } from 'node:fs/promises';
-const SHORE_FILE = join(__serverdir, 'data', 'shore-letters.json');
-async function readShoreLetters() {
-  try { return JSON.parse(await fsReadFile(SHORE_FILE, 'utf8')); } catch { return []; }
-}
-app.post('/api/shore/send', async (req, res) => {
-  const token = process.env.SHORE_TOKEN || '';
-  if (!token || req.headers['x-shore-token'] !== token) {
-    return res.status(401).json({ error: '岸讯口令不对' });
-  }
-  const message = String(req.body?.message || '').trim();
-  if (!message) return res.status(400).json({ error: '信不能是空的' });
-  const item = {
-    id: `shore-${Date.now()}`,
-    at: new Date().toISOString(),
-    kind: 'letter',
-    message,
-    channels: {},
-  };
-  if (cfg.barkKey) {
-    try {
-      await pushBark({ key: cfg.barkKey, body: message });
-      item.channels.bark = 'sent';
-    } catch (e) {
-      item.channels.bark = `failed: ${e.message}`;
-    }
-  } else {
-    item.channels.bark = 'not_configured';
-  }
-  // TODO(Web Push)：PWA 订阅落地后在这里同时发原生推送
-  const list = [item, ...(await readShoreLetters())].slice(0, 50);
-  await fsMkdir(join(__serverdir, 'data'), { recursive: true });
-  await fsWriteFile(SHORE_FILE, JSON.stringify(list, null, 2));
-  res.json({ ok: true, id: item.id, channels: item.channels });
-});
-
 // ---- 语音桥：realtime brain（tmux 模式）把通话轮次注入晞晞窗口 ----
 // brain.py POST { callSessionId, turnId, text, prosody }，Bearer=VOICE_TMUX_TOKEN（与 video/.env 同值）
 app.post('/api/bridge/voice-turn', (req, res) => {
@@ -903,9 +863,7 @@ app.get('/api/connect/native-health', async (_req, res) => {
 app.get('/api/mind/state', async (_req, res) => {
   const s = await getMindState();
   if (!s.available) return res.json(s);
-  // 信纸 = 晞晞亲笔信（shore）+ 心潮自动岸讯，按时间新到旧合并
-  const letters = (await readShoreLetters()).map(({ id, at, kind, message }) => ({ id, at, kind, message }));
-  const items = [...letters, ...(s.bark?.items || [])]
+  const items = [...(s.bark?.items || [])]
     .sort((a, b) => new Date(b.at) - new Date(a.at))
     .slice(0, 12);
   res.json({ ...s, bark: { lastAt: items[0]?.at || null, items } });
