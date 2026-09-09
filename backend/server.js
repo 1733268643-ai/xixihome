@@ -828,13 +828,6 @@ app.get('/api/connect/native-health', async (_req, res) => {
     mk('permission', '权限 Hook', claudeSt.permissionMode ? true : 'partial', claudeSt.permissionMode ? `模式 ${claudeSt.permissionMode}` : '待窗口以受控模式重启'),
     mk('media', '图片/媒体桥', true),
   ];
-  const wbSt = bridgeChat.status('workbench');
-  const codexChecks = [
-    mk('tmux', 'tmux 会话', wbSt.alive),
-    mk('inject', '消息注入', wbSt.alive && ['codex', 'node'].includes(wbSt.pane), wbSt.pane ? `pane: ${wbSt.pane}` : '窗口没开'),
-    mk('notify', '回传 notify', wbSt.count > 0 ? true : 'partial', wbSt.count > 0 ? null : '还没有回传记录'),
-    mk('media', '图片/媒体桥', true),
-  ];
   const mind = await getMindState();
   const mindChecks = [
     mk('state', '状态读取', !!mind.available, mind.reason),
@@ -852,7 +845,6 @@ app.get('/api/connect/native-health', async (_req, res) => {
     updatedAt: new Date().toISOString(),
     providers: [
       { key: 'claude', label: 'Claude · tmux', status: roll(claudeChecks), checks: claudeChecks },
-      { key: 'codex', label: 'Codex · workbench', status: roll(codexChecks), checks: codexChecks },
       { key: 'xinchao', label: '心潮 · Dynamic Mind', status: roll(mindChecks), checks: mindChecks },
       { key: 'ombre', label: 'Ombre Brain', status: roll(obChecks), checks: obChecks },
     ],
@@ -963,7 +955,7 @@ app.post('/api/bridge/inject', async (req, res) => {
 });
 
 
-// ---- tmux 桥聊天：直连蟹堡窗口（多窗口，win=xixi|workbench|device）----
+// ---- tmux 桥聊天：直连蟹堡窗口（win=xixi）----
 app.get('/api/bridge/windows', (_req, res) => {
   res.json({ windows: bridgeChat.listWindows() });
 });
@@ -1017,7 +1009,7 @@ app.post('/api/bridge/chat/send', (req, res) => {
   } : null;
   let payload = `[XixiHome ${hh}:${mm}]`;
   if (image) {
-    // 注入窗口的是主机本地路径，claude/codex 直接 Read；前端只见 URL
+    // 注入窗口的是主机本地路径，claude 直接 Read；前端只见 URL
     const local = join(MEDIA_DIR, image.url.split('/').pop());
     payload += ` [邓邓发来图片：${local}${image.name ? `（${image.name}）` : ''}]`;
   }

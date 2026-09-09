@@ -1,11 +1,10 @@
-// tmux 桥：XixiHome 聊天直连蟹堡 tmux 窗口（多窗口版，2026-08-31）。
+// tmux 桥：XixiHome 聊天直连蟹堡 tmux 窗口。
 //
 //   发：她的话 → tmux load-buffer/paste-buffer + send-keys 注入对应会话
-//   收：claude 窗口用 Stop hook（scripts/xixihome-stop-hook.sh）、
-//       codex 窗口用 notify 钩子（scripts/codex-notify.sh），
-//       都 POST 到 /api/bridge/reply（带 win）落进各自历史
+//   收：claude 窗口用 Stop hook（scripts/xixihome-stop-hook.sh），
+//       POST 到 /api/bridge/reply 落进 xixi 历史
 //
-// 历史：backend/data/bridge-<win>.jsonl，一行一条 {ts, role, text, source}
+// 历史：backend/data/bridge-chat.jsonl，一行一条 {ts, role, text, source}
 // 兼容：默认窗口 xixi 沿用老文件 bridge-chat.jsonl；语音桥固定走 xixi。
 
 import { spawnSync } from 'node:child_process';
@@ -25,21 +24,9 @@ export const WINDOWS = {
     label: '晞晞',
     file: process.env.BRIDGE_CHAT_FILE || join(DATA, 'bridge-chat.jsonl'),
   },
-  workbench: {
-    session: 'workbench',
-    kind: 'codex',
-    label: '工作台',
-    file: join(DATA, 'bridge-workbench.jsonl'),
-  },
-  device: {
-    session: 'device',
-    kind: 'claude',
-    label: '设备窗口',
-    file: join(DATA, 'bridge-device.jsonl'),
-  },
 };
 const DEFAULT_WIN = 'xixi';
-const ALLOWED_PANES = { claude: ['claude', 'node'], codex: ['codex', 'node'] };
+const ALLOWED_PANES = { claude: ['claude', 'node'] };
 
 export function resolveWin(win) {
   return WINDOWS[win] ? win : DEFAULT_WIN;
