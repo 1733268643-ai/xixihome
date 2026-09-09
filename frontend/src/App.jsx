@@ -5,8 +5,8 @@ import { Icon, CrabIcon, CrabMascot } from './ui/icons.jsx';
 import Chat, { fileToResizedDataURL } from './ui/Chat.jsx';
 import ChatDirectory from './ui/ChatDirectory.jsx';
 import Gate from './ui/Gate.jsx';
-import Call from './ui/Call.jsx';
-import CallLog from './ui/CallLog.jsx';
+import BridgeChat from './ui/BridgeChat.jsx';
+import StarMap from './ui/StarMap.jsx';
 import { HomePage, InnerPage, CalendarPage, MorePage, DocsPage, NeteasePage, KePage, EnginePage, Sec, daysTogether } from './ui/pages.jsx';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
@@ -42,8 +42,6 @@ export default function App() {
   const [palette, setPalette] = useState(false);
 
   const [tab, setTab] = useState('home');
-  const [calling, setCalling] = useState(null);   // null | {video}
-  const [callLog, setCallLog] = useState(false);
   const screenRef = useRef(null);
   const [innerTab, setInnerTab] = useState('now');
 
@@ -436,8 +434,10 @@ export default function App() {
   if (checking || !authed || !doorOpen) return gate;
 
   const TABS = [
-    ['home', '家', Icon.home], ['inner', '内在', Icon.inner],
-    ['chat', '说话', Icon.chat], ['cal', '日历', Icon.cal], ['more', '更多', Icon.more],
+    ['home', '家', Icon.home],
+    ['chat', '聊天', Icon.chat],
+    ['bridge', '桥', Icon.inner],
+    ['star', '星图', Icon.star],
   ];
   const focusedChat = tab === 'chat';
 
@@ -445,27 +445,20 @@ export default function App() {
     <div className="app">
       <div className="screen" ref={screenRef}>
         {tab === 'home' && <HomePage mind={mind} env={env} map={map} health={health} memories={memories}
-          onMenu={() => setDrawer(true)} onLog={logHealth} onGo={setTab}
-          onCall={(video) => setCalling({ video })} onCallLog={() => setCallLog(true)} />}
-        {callLog && !calling && <CallLog api={api} onClose={() => setCallLog(false)} />}
-        {calling && <Call video={calling.video} onClose={() => setCalling(null)} />}
-        {tab === 'inner' && <InnerPage mind={mind} memories={memories} memQuery={memQuery}
-          onSearch={searchMem} searching={searching} tab={innerTab} setTab={setInnerTab}
-          map={map} onReadMemory={readMemory} />}
-        {tab === 'cal' && <CalendarPage map={map} events={events} ym={ym} onYm={setYm} onAdd={addEvent} onDel={delEvent} />}
-        {tab === 'more' && <MorePage sources={sources} connect={connect} reading={reading} netease={netease} onGo={(v) => (v === 'docs' ? openDocs() : setTab(v))}
-          onSync={syncMemory} syncing={syncing} docs={docs} />}
-        {tab === 'docs' && <DocsPage docs={docs} onBack={() => setTab('more')} />}
-        {tab === 'config' && <ConfigPage api={api} onBack={() => setTab('more')} />}
-        {tab === 'netease' && <NeteasePage api={api} onBack={() => setTab('more')} />}
-        {tab === 'ke' && <KePage api={api} onBack={() => setTab('more')} />}
-        {tab === 'engine' && <EnginePage sources={sources} connect={connect} map={map} health={health} metrics={metrics}
-          onBack={() => setTab('more')} onGo={setTab} />}
+          onMenu={() => setDrawer(true)} onLog={logHealth} onGo={setTab} />}
+        {tab === 'chat' && <Chat
+          roomName={roomName} sessionId={sessionId} sessions={sessions} messages={messages}
+          sending={sending} input={input} setInput={setInput} onSend={send} onBack={() => setTab('home')}
+          onSwitchSession={openSession} onNewSession={createChat} onRenameSession={renameChat}
+          models={models} model={model} setModel={setModel} pendingImage={pendingImage} setPendingImage={setPendingImage} onSpeak={speak}
+        />}
+        {tab === 'bridge' && <BridgeChat api={api} />}
+        {tab === 'star' && <StarMap map={map} onReadMemory={readMemory} />}
       </div>
 
-      {tab !== 'chat' && !calling && !callLog && <CrabMascot />}
+      {tab !== 'chat' && <CrabMascot />}
 
-      {!focusedChat && !calling && !callLog && <nav className="tabbar">
+      {!focusedChat && <nav className="tabbar">
         {TABS.map(([id, label, I]) => (
           <button key={id} className={`tab${tab === id ? ' on' : ''}`} onClick={() => {
             setTab(id);
