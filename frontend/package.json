@@ -1,0 +1,20 @@
+{
+  "name": "paihome-classic-frontend",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "PaiHome Classic · 前端界面",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}

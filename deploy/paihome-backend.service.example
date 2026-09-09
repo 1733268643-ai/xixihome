@@ -1,0 +1,17 @@
+[Unit]
+Description=PaiHome Classic backend
+After=network.target
+
+[Service]
+Type=simple
+User=paihome
+WorkingDirectory=/opt/paihome-classic/backend
+EnvironmentFile=/opt/paihome-classic/backend/.env
+ExecStart=/usr/bin/node /opt/paihome-classic/backend/server.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

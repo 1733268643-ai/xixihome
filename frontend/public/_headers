@@ -1,0 +1,15 @@
+# Render 静态站头规则。彻底根治"更新了但还是旧页面"——
+# HTML 入口永远重新校验（no-cache），CDN/浏览器不再吃旧的 index.html；
+# 内容哈希过的 assets（index-xxxx.js/css）可长期缓存，改一次名换一次，永不冲突。
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  Cache-Control: no-cache

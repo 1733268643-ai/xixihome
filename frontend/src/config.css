@@ -1,0 +1,157 @@
+.modelconfig label {
+  color: #5e706b;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.configcard input,
+.configcard textarea,
+.configcard select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d8e7df;
+  border-radius: 14px;
+  background: #fbfefd;
+  color: var(--ink);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.configcard textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.55;
+}
+
+.configcard input:focus,
+.configcard textarea:focus,
+.configcard select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(138, 169, 163, 0.14);
+}
+
+.statuspill {
+  flex: none;
+  align-self: flex-start;
+  border-radius: 999px;
+  border: 1px solid #dbe8e3;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statuspill.ok {
+  background: #edf8f1;
+  color: #527d63;
+}
+
+.statuspill.warn {
+  background: #fff8e9;
+  color: #967243;
+}
+
+.configactions,
+.presetrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.configmsg {
+  border-radius: 12px;
+  background: #f3f8f5;
+  border: 1px solid #dfeae5;
+  padding: 9px 11px;
+  color: var(--muted);
+}
+
+.modelconfig .panelhead {
+  align-items: flex-start;
+}
+
+.paramgrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.paramgrid label {
+  display: grid;
+  grid-template-columns: 1fr 112px;
+  gap: 4px 10px;
+  align-items: center;
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid #edf4f0;
+}
+
+.paramgrid label:first-child {
+  border-top: none;
+}
+
+.paramgrid label span {
+  color: #34433f;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.paramgrid label small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.paramgrid input {
+  padding: 8px 10px;
+  text-align: right;
+}
+
+.msgtools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 82%;
+  padding: 0 4px;
+  color: #9aa9a3;
+  font-size: 11.5px;
+}
+
+.msgrow.user .msgtools {
+  justify-content: flex-end;
+}
+
+.msgtools span,
+.msgtools button {
+  min-height: 24px;
+  border-radius: 999px;
+  border: 1px solid #e1ebe6;
+  background: rgba(255, 255, 255, 0.54);
+  color: #7f918b;
+  padding: 3px 8px;
+  font: inherit;
+}
+
+.msgtools button {
+  cursor: pointer;
+}
+
+@media (max-width: 420px) {
+  .modelconfig .panelhead {
+    flex-direction: column;
+  }
+
+  .configactions .pillbtn,
+  .presetrow .pillbtn {
+    flex: 1 1 0;
+  }
+
+  .paramgrid label {
+    grid-template-columns: 1fr 96px;
+  }
+}

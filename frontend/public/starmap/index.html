@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Starmap</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif; color: #e0e8ff; }
+  canvas { display: block; }
+
+  #loading {
+    position: fixed; inset: 0; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 0;
+    z-index: 300; background: #050810;
+  }
+  #loading canvas { position: absolute; inset: 0; }
+  #loading p {
+    position: relative; z-index: 1;
+    color: rgba(160,190,240,0.5); font-size: 13px;
+    margin-top: 80px;
+    animation: loadTextPulse 3s ease-in-out infinite;
+  }
+  @keyframes loadTextPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+
+  #error-msg {
+    position: fixed; inset: 0; display: none; align-items: center;
+    justify-content: center; flex-direction: column; gap: 12px;
+    z-index: 300; background: #050810;
+    color: rgba(160,190,240,0.7); font-size: 14px;
+  }
+
+  /* hover tooltip — Liquid Glass */
+  #tooltip {
+    position: fixed;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-top-color: rgba(255,255,255,0.25);
+    border-radius: 10px; padding: 5px 12px;
+    font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.88);
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.15s;
+    backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+    -webkit-backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+    z-index: 200; white-space: nowrap;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.12);
+  }
+
+  /* Liquid Glass detail card */
+  #card {
+    position: fixed; z-index: 100;
+    width: 300px; max-height: 400px;
+    border-radius: 22px;
+    padding: 20px;
+    pointer-events: auto;
+    opacity: 0; transform: scale(0.92) translateY(8px);
+    transition: opacity 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto; overflow-x: hidden;
+    scrollbar-width: none;
+
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(50px) saturate(1.6) brightness(1.1);
+    -webkit-backdrop-filter: blur(50px) saturate(1.6) brightness(1.1);
+
+    border: 1px solid rgba(255,255,255,0.13);
+    border-top-color: rgba(255,255,255,0.3);
+    border-left-color: rgba(255,255,255,0.18);
+
+    box-shadow:
+      inset 0 1px 2px rgba(255,255,255,0.15),
+      inset 0 -1px 1px rgba(0,0,0,0.05),
+      0 8px 40px rgba(0,0,0,0.3),
+      0 1px 3px rgba(0,0,0,0.15);
+  }
+  #card::before {
+    content: '';
+    position: absolute; inset: -1px;
+    border-radius: 23px;
+    background: linear-gradient(
+      135deg,
+      rgba(180,220,255,0.25) 0%,
+      rgba(200,180,255,0.12) 20%,
+      rgba(255,200,220,0.08) 40%,
+      transparent 60%
+    );
+    pointer-events: none;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; -webkit-mask-composite: xor;
+    padding: 1.5px;
+  }
+  #card::after {
+    content: '';
+    position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0%,
+      rgba(180,210,255,0.06) 10%,
+      transparent 20%,
+      rgba(220,190,255,0.04) 35%,
+      transparent 45%,
+      rgba(255,210,200,0.04) 55%,
+      transparent 65%,
+      rgba(200,230,255,0.05) 80%,
+      transparent 90%
+    );
+    animation: liquidShimmer 8s linear infinite;
+    pointer-events: none;
+    border-radius: 22px;
+  }
+  @keyframes liquidShimmer {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  #card::-webkit-scrollbar { display: none; }
+  #card.open { opacity: 1; transform: scale(1) translateY(0); }
+  #card-close {
+    position: absolute; top: 12px; right: 14px; background: none; border: none;
+    color: rgba(255,255,255,0.25); font-size: 18px; cursor: pointer; line-height: 1;
+    transition: color 0.15s;
+  }
+  #card-close:hover { color: rgba(255,255,255,0.6); }
+  #card-name { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.88); margin-bottom: 8px; padding-right: 24px; line-height: 1.5; letter-spacing: 0.01em; }
+  .meta-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+  }
+  .tag.pinned { background: rgba(255,200,80,0.1); border-color: rgba(255,200,80,0.15); color: rgba(255,217,122,0.85); }
+  .tag.resolved { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
+  .tag.feel { background: rgba(255,140,80,0.08); border-color: rgba(255,140,80,0.14); color: rgba(255,170,112,0.85); }
+  .tag.diary { background: rgba(80,180,255,0.08); border-color: rgba(80,180,255,0.14); color: rgba(128,208,255,0.85); }
+  .card-meta { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+  .card-divider { height: 1px; background: linear-gradient(to right, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); margin: 0 0 12px 0; }
+  #card-content { font-size: 12.5px; line-height: 1.8; color: rgba(255,255,255,0.55); white-space: pre-wrap; word-break: break-word; }
+
+  #controls {
+    position: fixed; bottom: 24px; left: 24px;
+    display: flex; flex-direction: column; gap: 6px; z-index: 50;
+  }
+  .ctrl-btn {
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1); border-top-color: rgba(255,255,255,0.22);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.5); font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+    -webkit-backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.1);
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75); border-top-color: rgba(255,255,255,0.35); }
+
+  #legend {
+    position: fixed; bottom: 24px; right: 24px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1); border-top-color: rgba(255,255,255,0.22);
+    border-radius: 16px; padding: 13px 16px; font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+    -webkit-backdrop-filter: blur(40px) saturate(1.5) brightness(1.1);
+    z-index: 50; line-height: 2;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.1);
+  }
+  .legend-row { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .legend-hint { margin-top: 6px; color: rgba(255,255,255,0.25); font-size: 10px; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <canvas id="loading-canvas"></canvas>
+  <p>Rendering starmap…</p>
+</div>
+<script>
+(function() {
+  const canvas = document.getElementById('loading-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, cx, cy;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cx = W / 2; cy = H / 2;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const NUM = 24;
+  const particles = [];
+  for (let i = 0; i < NUM; i++) {
+    particles.push(resetParticle({}, true));
+  }
+
+  function resetParticle(p, init) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 180 + Math.random() * 220;
+    p.x = Math.cos(angle) * dist;
+    p.y = Math.sin(angle) * dist;
+    p.size = 1 + Math.random() * 2.5;
+    p.brightness = 0.3 + Math.random() * 0.7;
+    p.r = 160 + Math.random() * 60;
+    p.g = 190 + Math.random() * 40;
+    p.b = 230 + Math.random() * 25;
+    p.phase = init ? Math.random() : 0;
+    p.speed = 0.3 + Math.random() * 0.4;
+    return p;
+  }
+
+  const CYCLE = 3.0;
+
+  function draw() {
+    if (!document.getElementById('loading') || document.getElementById('loading').style.display === 'none') return;
+    requestAnimationFrame(draw);
+
+    ctx.clearRect(0, 0, W, H);
+
+    particles.forEach(p => {
+      p.phase += (1 / 60) * p.speed / CYCLE;
+      if (p.phase > 1) {
+        resetParticle(p, false);
+        p.phase = 0;
+      }
+
+      const t = p.phase;
+      const ease = t * t * t * t * t;
+      const curX = p.x * (1 - ease);
+      const curY = p.y * (1 - ease);
+
+      const dist = Math.sqrt(curX * curX + curY * curY);
+      const maxDist = Math.sqrt(p.x * p.x + p.y * p.y);
+
+      let alpha = p.brightness;
+      if (t < 0.1) alpha *= t / 0.1;
+      if (t > 0.85) alpha *= (1 - t) / 0.15;
+
+      const glow = 1 + (1 - dist / maxDist) * 2;
+      const sz = p.size * glow;
+
+      ctx.save();
+      ctx.translate(cx + curX, cy + curY);
+
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 4);
+      grad.addColorStop(0, `rgba(${p.r},${p.g},${p.b},${alpha})`);
+      grad.addColorStop(0.3, `rgba(${p.r},${p.g},${p.b},${alpha * 0.4})`);
+      grad.addColorStop(1, `rgba(${p.r},${p.g},${p.b},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, sz * 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = `rgba(255,255,255,${alpha * 0.9})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, sz * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    });
+
+    const breathT = Date.now() / 1000;
+    const breath = 0.5 + 0.5 * Math.sin(breathT * 0.8);
+    const ringRadius = 22 + breath * 14;
+    const ringAlpha = 0.5 + breath * 0.35;
+
+    const outerGrad = ctx.createRadialGradient(cx, cy, ringRadius * 0.3, cx, cy, ringRadius * 4);
+    outerGrad.addColorStop(0, `rgba(190,215,255,${ringAlpha * 0.12})`);
+    outerGrad.addColorStop(0.5, `rgba(170,200,245,${ringAlpha * 0.05})`);
+    outerGrad.addColorStop(1, 'rgba(170,200,245,0)');
+    ctx.fillStyle = outerGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringRadius * 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    const RING_COUNT = 16;
+    for (let i = 0; i < RING_COUNT; i++) {
+      const baseAngle = (i / RING_COUNT) * Math.PI * 2;
+      const angle = baseAngle + breathT * 0.3;
+      const pOffset = Math.sin(breathT * 1.5 + i * 2.1) * 4;
+      const r = ringRadius + pOffset;
+      const px = cx + Math.cos(angle) * r;
+      const py = cy + Math.sin(angle) * r;
+
+      const pAlpha = ringAlpha * (0.5 + 0.5 * Math.sin(breathT * 2 + i * 1.3));
+      const pSize = 2 + Math.sin(breathT * 1.2 + i * 0.8) * 1;
+
+      const g = ctx.createRadialGradient(px, py, 0, px, py, pSize * 5);
+      g.addColorStop(0, `rgba(200,220,255,${pAlpha * 0.8})`);
+      g.addColorStop(0.4, `rgba(180,210,250,${pAlpha * 0.25})`);
+      g.addColorStop(1, 'rgba(180,210,250,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(px, py, pSize * 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = `rgba(255,255,255,${pAlpha * 0.7})`;
+      ctx.beginPath();
+      ctx.arc(px, py, pSize * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const centerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, ringRadius * 0.7);
+    centerGlow.addColorStop(0, `rgba(210,225,255,${ringAlpha * 0.15})`);
+    centerGlow.addColorStop(1, 'rgba(210,225,255,0)');
+    ctx.fillStyle = centerGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringRadius * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  draw();
+})();
+</script>
+<div id="error-msg">
+  <p id="error-text"></p>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="card">
+  <button id="card-close">&times;</button>
+  <div id="card-name"></div>
+  <div class="meta-row" id="card-tags"></div>
+  <div class="card-meta" id="card-meta"></div>
+  <div class="card-divider"></div>
+  <div id="card-content"></div>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="btn-reset" title="Reset view">&#x2316;</button>
+</div>
+
+<div id="legend">
+  <div class="legend-row"><div class="legend-dot" style="background:#ffd97a"></div> 金色 · 固化的核心记忆</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#b07aff"></div> 紫 · 沉淀下来的长期记忆</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#7aabff"></div> 蓝 · 还在活动的记忆</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#ff9060"></div> 暖 · 情绪重的时刻</div>
+  <div class="legend-hint">越大越亮，他越看重<br>拖动转动星系 · 双指缩放 · 轻点一颗星读它<br>不动它，它自己慢慢转</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+
+<script>
+// 顾川的家：接真实 OB 数据（经 paihome 后端），密码沿用主应用的 localStorage
+// 静态站（guchuan-1.onrender.com）没有 /api，要打到后端；本地开发走 vite 代理
+const API_BASE = location.hostname.endsWith('.onrender.com')
+  ? 'https://guchuan.onrender.com' : '';
+window.STARMAP_CONFIG = {
+  nodesUrl: API_BASE + '/api/mind/network',
+  detailUrl: API_BASE + '/api/mind/bucket/{id}',
+};
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ── Configuration ─────────────────────────────────────
+// Override these before loading, or edit directly.
+const CONFIG = window.STARMAP_CONFIG || {};
+const API_NODES    = CONFIG.nodesUrl    || './demo-data.json';
+const API_CONCEPTS = CONFIG.conceptsUrl || null;
+const API_DETAIL   = CONFIG.detailUrl   || null;   // e.g. '/api/bucket/{id}'
+const DEMO_MODE    = !CONFIG.nodesUrl;
+
+// ── Scene ──────────────────────────────────────────────
+const W = window.innerWidth, H = window.innerHeight;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050810);
+
+const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 5000);
+camera.position.set(0, 0, 450);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 60;
+controls.maxDistance = 2000;
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 1.2, 0.5, 0.05);
+composer.addPass(bloom);
+
+// ── Star texture ──────────────────────────────────────
+function makeStarTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0,   'rgba(255,255,255,1)');
+  g.addColorStop(0.25,'rgba(255,255,255,0.9)');
+  g.addColorStop(0.6, 'rgba(255,255,255,0.3)');
+  g.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 32, 32);
+  return new THREE.CanvasTexture(c);
+}
+const starTex = makeStarTexture();
+
+// ── Background stars ───────────────────────────────────
+{
+  const count = 3500;
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+
+  const clusters = Array.from({length: 11}, () => {
+    const base = 25 + Math.pow(Math.random(), 0.5) * 180;
+    return {
+      x: (Math.random() - 0.5) * 800,
+      y: (Math.random() - 0.5) * 800,
+      z: (Math.random() - 0.5) * 800,
+      sx: base * (0.15 + Math.random() * 3.0),
+      sy: base * (0.15 + Math.random() * 3.0),
+      sz: base * (0.15 + Math.random() * 3.0),
+      weight: 0.4 + Math.random() * 2.8,
+    };
+  });
+  const totalWeight = clusters.reduce((s, c) => s + c.weight, 0);
+
+  for (let i = 0; i < count; i++) {
+    let x, y, z;
+    if (Math.random() < 0.78) {
+      let rw = Math.random() * totalWeight, chosen = clusters[0];
+      for (const c of clusters) { rw -= c.weight; if (rw <= 0) { chosen = c; break; } }
+      const decay = Math.pow(Math.random(), 1.6);
+      x = chosen.x + (Math.random() - 0.5) * 2 * chosen.sx * decay;
+      y = chosen.y + (Math.random() - 0.5) * 2 * chosen.sy * decay;
+      z = chosen.z + (Math.random() - 0.5) * 2 * chosen.sz * decay;
+    } else {
+      x = (Math.random() - 0.5) * 1000;
+      y = (Math.random() - 0.5) * 1000;
+      z = (Math.random() - 0.5) * 1000;
+    }
+    pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+    const tier = Math.random();
+    let b;
+    if (tier < 0.05)      b = 0.75 + Math.random() * 0.45;
+    else if (tier < 0.25) b = 0.25 + Math.random() * 0.35;
+    else                  b = 0.04 + Math.random() * 0.14;
+    const warmth = b > 0.5 ? 0.92 : (0.62 + Math.random() * 0.2);
+    col[i*3] = b * warmth; col[i*3+1] = b * (warmth + 0.05); col[i*3+2] = b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
+    size: 3.5, map: starTex, vertexColors: true,
+    sizeAttenuation: true, transparent: true, alphaTest: 0.01, depthWrite: false,
+  })));
+}
+
+// ── Color & size helpers ───────────────────────────────
+function logMap(importance, lo, hi) {
+  const imp = Math.max(1, Math.min(10, importance ?? 5));
+  const t = Math.log(imp) / Math.log(10);
+  return lo + t * (hi - lo);
+}
+
+function baseColor(d) {
+  if (d.pinned)   return new THREE.Color(0xffd97a);
+  if (d.resolved) return new THREE.Color(0x7080a0);
+  switch (d.type) {
+    case 'feel':      return new THREE.Color(0xff9060);
+    case 'diary':     return new THREE.Color(0x60c8ff);
+    case 'permanent': return new THREE.Color(0xb07aff);
+    default:          return new THREE.Color(0x7aabff);
+  }
+}
+
+function nodeColor(d) {
+  const c = baseColor(d).clone();
+  let bright;
+  if (d.pinned) {
+    bright = logMap(d.importance, 1.8, 3.2);
+  } else if (d.resolved) {
+    bright = logMap(d.importance, 0.15, 0.35);
+  } else {
+    bright = logMap(d.importance, 0.4, 1.8);
+  }
+  c.multiplyScalar(bright);
+  return c;
+}
+
+function nodeRadius(d) {
+  const r = logMap(d.importance, 1.2, 3.8);
+  return d.pinned ? r + 1.0 : r;
+}
+
+// ── Build graph ────────────────────────────────────────
+function buildGraph({ nodes, edges }) {
+  nodes.forEach(n => {
+    const r = 100 + Math.random() * 120;
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2 * Math.random() - 1);
+    n.x = r * Math.sin(ph) * Math.cos(th);
+    n.y = r * Math.sin(ph) * Math.sin(th);
+    n.z = r * Math.cos(ph);
+    n.vx = n.vy = n.vz = 0;
+  });
+
+  const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+  const geoCache = {};
+  function getGeo(r) {
+    const k = Math.round(r * 4);
+    if (!geoCache[k]) geoCache[k] = new THREE.SphereGeometry(r, 20, 16);
+    return geoCache[k];
+  }
+
+  const meshes = [];
+  const pinnedMeshes = [];
+
+  nodes.forEach(n => {
+    const r = nodeRadius(n);
+    const color = nodeColor(n);
+    const mat = new THREE.MeshBasicMaterial({ color });
+    const mesh = new THREE.Mesh(getGeo(r), mat);
+    mesh.position.set(n.x, n.y, n.z);
+    mesh.userData.node = n;
+    mesh.userData.baseColor = color.clone();
+    mesh.userData.baseScale = 1;
+    scene.add(mesh);
+    meshes.push(mesh);
+    n._mesh = mesh;
+    if (n.pinned && !n.resolved) {
+      mesh.userData.breathPhase = Math.random() * Math.PI * 2;
+      mesh.userData.breathSpeed = 0.5 + Math.random() * 1.0;
+      mesh.userData.breathAmp   = 0.07 + Math.random() * 0.18;
+      pinnedMeshes.push(mesh);
+    }
+  });
+
+  const pairs = (edges || []).map(e => ({
+    a: nodeMap[e.source?.id ?? e.source],
+    b: nodeMap[e.target?.id ?? e.target],
+    sim: e.similarity ?? 0.5
+  })).filter(e => e.a && e.b);
+
+  const EDGE_SEGS = 20;
+  const edgeLines = [];
+  pairs.forEach(({ a, b, sim }, idx) => {
+    const positions = new Float32Array((EDGE_SEGS + 1) * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setDrawRange(0, 0);
+    const mat = new THREE.LineBasicMaterial({
+      transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+    });
+    const line = new THREE.Line(geo, mat);
+    line.visible = false;
+    line.frustumCulled = false;
+    scene.add(line);
+    edgeLines.push({ line, geo, mat, positions, a, b, sim, idx, progress: 0, active: false, fromA: true });
+  });
+
+  const _q = new THREE.Quaternion();
+  const _v = new THREE.Vector3();
+  nodes.forEach(n => {
+    const tilt = 0.08 + Math.random() * 0.15;
+    const azimuth = Math.random() * Math.PI * 2;
+    n._orbitAxis = new THREE.Vector3(
+      Math.sin(tilt) * Math.cos(azimuth),
+      Math.cos(tilt),
+      Math.sin(tilt) * Math.sin(azimuth)
+    ).normalize();
+    if (n.pinned) {
+      n._orbitSpeed = 0.00003 + Math.random() * 0.00002;
+    } else {
+      const activity = Math.min(1, (n.score ?? 0) / 80);
+      n._orbitSpeed = 0.0001 + activity * 0.0006 + Math.random() * 0.00008;
+    }
+  });
+
+  let alpha = 1.0;
+
+  function tick() {
+    if (alpha > 0.002) {
+      alpha *= 0.97;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j];
+          const dx = b.x-a.x, dy = b.y-a.y, dz = b.z-a.z;
+          const d2 = dx*dx + dy*dy + dz*dz + 1;
+          const f = -1200 / d2 / Math.sqrt(d2);
+          a.vx += dx*f; a.vy += dy*f; a.vz += dz*f;
+          b.vx -= dx*f; b.vy -= dy*f; b.vz -= dz*f;
+        }
+      }
+      pairs.forEach(({ a, b, sim }) => {
+        const dx = b.x-a.x, dy = b.y-a.y, dz = b.z-a.z;
+        const d = Math.sqrt(dx*dx+dy*dy+dz*dz) + 0.01;
+        const target = 15 + (1 - sim) * 50;
+        const f = (d - target) * 0.02 * sim / d;
+        a.vx += dx*f; a.vy += dy*f; a.vz += dz*f;
+        b.vx -= dx*f; b.vy -= dy*f; b.vz -= dz*f;
+      });
+      nodes.forEach(n => {
+        n.vx -= n.x * 0.005; n.vy -= n.y * 0.005; n.vz -= n.z * 0.005;
+        n.vx *= 0.78; n.vy *= 0.78; n.vz *= 0.78;
+        n.x += n.vx; n.y += n.vy; n.z += n.vz;
+        n._mesh.position.set(n.x, n.y, n.z);
+      });
+    } else {
+      nodes.forEach(n => {
+        _v.set(n.x, n.y, n.z);
+        _q.setFromAxisAngle(n._orbitAxis, n._orbitSpeed);
+        _v.applyQuaternion(_q);
+        n.x = _v.x; n.y = _v.y; n.z = _v.z;
+        n._mesh.position.set(n.x, n.y, n.z);
+      });
+    }
+
+    edgeLines.forEach(e => {
+      if (!e.active && e.progress <= 0) return;
+      if (e.active && e.progress < 1) {
+        e.progress = Math.min(1, e.progress + 0.04);
+      } else if (!e.active) {
+        e.progress = Math.max(0, e.progress - 0.06);
+      }
+      if (e.progress <= 0) { e.line.visible = false; e.geo.setDrawRange(0, 0); return; }
+      const src = e.fromA ? e.a : e.b;
+      const dst = e.fromA ? e.b : e.a;
+      const t = e.progress;
+      for (let s = 0; s <= EDGE_SEGS; s++) {
+        const f = s / EDGE_SEGS * t;
+        e.positions[s*3]   = src.x + (dst.x - src.x) * f;
+        e.positions[s*3+1] = src.y + (dst.y - src.y) * f;
+        e.positions[s*3+2] = src.z + (dst.z - src.z) * f;
+      }
+      e.geo.attributes.position.needsUpdate = true;
+      const drawCount = Math.max(2, Math.ceil(t * (EDGE_SEGS + 1)));
+      e.geo.setDrawRange(0, drawCount);
+      e.mat.opacity = 0.35 * Math.min(1, t * 2);
+      e.line.visible = true;
+    });
+  }
+
+  const linkedMeshes = new Set();
+
+  function showEdgesFor(nodeId) {
+    linkedMeshes.forEach(mesh => {
+      mesh.material.color.copy(mesh.userData.baseColor);
+      if (mesh.userData.baseScale) mesh.scale.setScalar(mesh.userData.baseScale);
+    });
+    linkedMeshes.clear();
+
+    edgeLines.forEach(e => {
+      if (!nodeId) { e.active = false; return; }
+      const match = e.a.id === nodeId || e.b.id === nodeId;
+      if (match) {
+        e.active = true;
+        e.fromA = e.a.id === nodeId;
+        const other = e.fromA ? e.b : e.a;
+        const c = baseColor(other);
+        e.mat.color.set(c).multiplyScalar(0.7);
+        if (other._mesh) linkedMeshes.add(other._mesh);
+      } else {
+        e.active = false;
+      }
+    });
+  }
+
+  return { meshes, pinnedMeshes, tick, showEdgesFor, linkedMeshes };
+}
+
+// ── Interaction ────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points = { threshold: 3 };
+// 手指比鼠标粗：没直接命中就找屏幕距离最近的一颗（20px 内）
+function nearestByScreen(cx, cy) {
+  let best = null, bd = 20 * 20;
+  const v = new THREE.Vector3();
+  for (const m of allMeshes) {
+    v.copy(m.position).project(camera);
+    if (v.z > 1) continue;
+    const sx = (v.x * .5 + .5) * innerWidth, sy = (-v.y * .5 + .5) * innerHeight;
+    const d = (sx - cx) ** 2 + (sy - cy) ** 2;
+    if (d < bd) { bd = d; best = m; }
+  }
+  return best;
+}
+const mouse = new THREE.Vector2(-9999, -9999);
+
+const tooltip = document.getElementById('tooltip');
+const card    = document.getElementById('card');
+
+document.getElementById('card-close').onclick = () => {
+  card.classList.remove('open');
+  if (selected) { selected.scale.setScalar(selected.userData.baseScale); selected = null; }
+  showEdgesFor(null);
+};
+document.getElementById('btn-reset').onclick = () => controls.reset();
+
+let allMeshes = [], pinnedMeshes = [];
+let hovered   = null;
+let selected  = null;
+let showEdgesFor = () => {};
+let linkedMeshes = new Set();
+
+const previewCache = {};
+
+window.addEventListener('mousemove', e => {
+  mouse.x = (e.clientX / window.innerWidth)  * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  tooltip.style.left = (e.clientX + 16) + 'px';
+  tooltip.style.top  = (e.clientY - 12) + 'px';
+});
+
+async function fetchPreview(id) {
+  if (!API_DETAIL) return null;
+  if (previewCache[id] !== undefined) return previewCache[id];
+  try {
+    const url = API_DETAIL.replace('{id}', id);
+    const res = await fetch(url, { headers: { 'x-access-password': localStorage.getItem('pai_pw') || '' } });
+    if (!res.ok) { previewCache[id] = null; return null; }
+    const data = await res.json();
+    const text = (data.content ?? '').trim().slice(0, 120);
+    previewCache[id] = text || null;
+    return previewCache[id];
+  } catch { previewCache[id] = null; return null; }
+}
+
+function positionCard(mesh) {
+  const pos = mesh.position.clone().project(camera);
+  let sx = (pos.x * 0.5 + 0.5) * window.innerWidth;
+  let sy = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+  const cw = 300, ch = card.offsetHeight || 260;
+  const margin = 20;
+  if (sx + margin + cw < window.innerWidth - 20) {
+    sx = sx + margin;
+  } else {
+    sx = sx - margin - cw;
+  }
+  sy = Math.max(20, Math.min(window.innerHeight - ch - 20, sy - ch / 2));
+  card.style.left = sx + 'px';
+  card.style.top = sy + 'px';
+}
+
+// iOS 的 WebGL 画布上 click 不可靠：用 pointerdown/up + 位移判定
+let _pd = null;
+window.addEventListener('pointerdown', e => { _pd = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+window.addEventListener('pointerup', async e => {
+  if (!_pd) return;
+  const moved = Math.hypot(e.clientX - _pd.x, e.clientY - _pd.y);
+  const dt = Date.now() - _pd.t; _pd = null;
+  if (moved > 12 || dt > 600) return;              // 是拖转/长按，不是点
+  if (card.contains(e.target)) return;
+  if (e.target.closest && e.target.closest('#exit')) { location.href = '/'; return; }
+
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  let hits = raycaster.intersectObjects(allMeshes);
+  if (!hits.length) {
+    const nb = nearestByScreen(e.clientX, e.clientY);
+    if (nb) hits = [{ object: nb }];
+  }
+
+  if (!hits.length) {
+    card.classList.remove('open');
+    if (selected) { selected.scale.setScalar(selected.userData.baseScale); selected = null; }
+    showEdgesFor(null);
+    return;
+  }
+
+  const mesh = hits[0].object;
+  const d = mesh.userData.node;
+
+  if (mesh === selected) {
+    selected.scale.setScalar(selected.userData.baseScale);
+    selected = null;
+    card.classList.remove('open');
+    showEdgesFor(null);
+    return;
+  }
+
+  if (selected) selected.scale.setScalar(selected.userData.baseScale);
+  selected = mesh;
+  selected.scale.setScalar(selected.userData.baseScale * 1.7);
+  showEdgesFor(d.id);
+
+  document.getElementById('card-name').textContent = d.name;
+  const typeLabel = { feel: 'feel', diary: 'diary', permanent: 'permanent', dynamic: 'dynamic' }[d.type] ?? d.type;
+  document.getElementById('card-meta').textContent = `${typeLabel} · importance ${d.importance ?? '—'} · score ${(d.score ?? 0).toFixed(1)}`;
+
+  const tagsEl = document.getElementById('card-tags');
+  tagsEl.innerHTML = '';
+  if (d.pinned)   tagsEl.innerHTML += '<span class="tag pinned">pinned</span>';
+  if (d.resolved) tagsEl.innerHTML += '<span class="tag resolved">resolved</span>';
+  if (d.type)     tagsEl.innerHTML += `<span class="tag ${d.type}">${d.type}</span>`;
+  (d.domain ?? []).forEach(dom => tagsEl.innerHTML += `<span class="tag">${dom}</span>`);
+
+  document.getElementById('card-content').textContent = '';
+  positionCard(mesh);
+  card.classList.add('open');
+
+  if (API_DETAIL) {
+    document.getElementById('card-content').textContent = 'Loading…';
+    const preview = await fetchPreview(d.id);
+    document.getElementById('card-content').textContent = preview ?? '';
+  }
+});
+
+window.addEventListener('resize', () => {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+});
+
+// ── Main ───────────────────────────────────────────────
+let tickFn = null;
+
+async function main() {
+  try {
+    const bucketRes = await fetch(API_NODES, { headers: { 'x-access-password': localStorage.getItem('pai_pw') || '' } });
+    if (!bucketRes.ok) throw new Error('Failed to load data: ' + bucketRes.status);
+    const bucketData = await bucketRes.json();
+
+    if (API_CONCEPTS) {
+      try {
+        const conceptRes = await fetch(API_CONCEPTS, { headers: { 'x-access-password': localStorage.getItem('pai_pw') || '' } });
+        if (conceptRes.ok) {
+          const conceptData = await conceptRes.json();
+          const bucketEdges = {};
+          if (conceptData.nodes) {
+            conceptData.nodes.forEach(concept => {
+              const bs = concept.buckets || [];
+              for (let i = 0; i < bs.length; i++) {
+                for (let j = i + 1; j < bs.length; j++) {
+                  const key = [bs[i], bs[j]].sort().join('|');
+                  bucketEdges[key] = (bucketEdges[key] || 0) + 1;
+                }
+              }
+            });
+          }
+          const edges = Object.entries(bucketEdges).map(([key, weight]) => {
+            const [a, b] = key.split('|');
+            return { source: a, target: b, similarity: Math.min(1, weight / 5) };
+          });
+          bucketData.edges = edges;
+        }
+      } catch {}
+    }
+
+    const g = buildGraph(bucketData);
+    // 顶部副标题：真实颗数 + 固化数
+    {
+      const n = bucketData.nodes || [];
+      const pinned = n.filter((x) => x.pinned).length;
+      const el = document.getElementById('skycount');
+      if (el) el.textContent = `${n.length} 颗 · ${pinned} 颗固化 · 全部来自 OB`;
+    }
+    allMeshes    = g.meshes;
+    pinnedMeshes = g.pinnedMeshes;
+    tickFn       = g.tick;
+    showEdgesFor = g.showEdgesFor;
+    linkedMeshes = g.linkedMeshes;
+
+    await new Promise(r => setTimeout(r, 1500));
+    const loadEl = document.getElementById('loading');
+    loadEl.style.transition = 'opacity 0.6s ease';
+    loadEl.style.opacity = '0';
+    setTimeout(() => { loadEl.style.display = 'none'; }, 600);
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    const el = document.getElementById('error-msg');
+    el.style.display = 'flex';
+    document.getElementById('error-text').textContent = 'Load failed: ' + err.message;
+  }
+}
+
+// ── Shooting stars / Meteors ─────────────────────────
+const meteors = [];
+
+function spawnMeteor(baseDir, baseOrigin, isShower) {
+  const r = 350 + Math.random() * 500;
+  const th = Math.random() * Math.PI * 2;
+  const ph = Math.acos(2 * Math.random() - 1);
+  let origin;
+  if (baseOrigin) {
+    origin = baseOrigin.clone().add(new THREE.Vector3(
+      (Math.random() - 0.5) * 600, (Math.random() - 0.5) * 600, (Math.random() - 0.5) * 600,
+    ));
+  } else {
+    origin = new THREE.Vector3(r * Math.sin(ph) * Math.cos(th), r * Math.sin(ph) * Math.sin(th), r * Math.cos(ph));
+  }
+
+  let dir;
+  if (baseDir) {
+    dir = baseDir.clone().add(new THREE.Vector3(
+      (Math.random() - 0.5) * 0.15, (Math.random() - 0.5) * 0.15, (Math.random() - 0.5) * 0.15,
+    )).normalize();
+  } else {
+    dir = new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).normalize();
+  }
+
+  const scale = isShower ? (0.3 + Math.random() * 1.5) : (0.5 + Math.random() * 1.5);
+  const speed = 4 + Math.random() * 8;
+  const life = 0.3 + scale * 0.3 + Math.random() * 0.4;
+  const tailLen = 15 + Math.floor(scale * 25);
+  const delay = isShower ? Math.random() * 1.2 : 0;
+
+  const glow = 0.6 + scale * 1.2;
+  const warmth = 0.85 + Math.random() * 0.15;
+
+  const positions = new Float32Array(tailLen * 3);
+  const colors = new Float32Array(tailLen * 3);
+  for (let i = 0; i < tailLen; i++) {
+    const f = i / tailLen;
+    positions[i*3] = origin.x; positions[i*3+1] = origin.y; positions[i*3+2] = origin.z;
+    const bright = (1 - f) * (1 - f) * glow;
+    colors[i*3] = bright * warmth; colors[i*3+1] = bright * (warmth * 0.97 + 0.03); colors[i*3+2] = bright;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geo.setDrawRange(0, 0);
+
+  const mat = new THREE.LineBasicMaterial({
+    vertexColors: true, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, depthWrite: false, linewidth: 1,
+  });
+  const line = new THREE.Line(geo, mat);
+  line.frustumCulled = false;
+  scene.add(line);
+
+  const headSize = scale * 3.5 + 1;
+  const headMat = new THREE.SpriteMaterial({
+    map: starTex, color: new THREE.Color(glow * warmth, glow * (warmth * 0.97 + 0.03), glow),
+    transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+  });
+  const headSprite = new THREE.Sprite(headMat);
+  headSprite.scale.setScalar(headSize);
+  headSprite.visible = false;
+  scene.add(headSprite);
+
+  return {
+    line, geo, mat, positions, colors, origin: origin.clone(), head: origin.clone(),
+    dir, speed, life, age: -delay, tailLen, scale, drawn: 0,
+    headSprite, headMat, glow,
+  };
+}
+
+let meteorTimer = 3 + Math.random() * 8;
+let showerTimer = 25 + Math.random() * 35;
+
+function triggerShower() {
+  const dir = new THREE.Vector3(Math.random()-0.5, -0.3-Math.random()*0.7, Math.random()-0.5).normalize();
+  const r = 500 + Math.random() * 300;
+  const baseOrigin = new THREE.Vector3(
+    (Math.random()-0.5) * 400 - dir.x * r,
+    (Math.random()-0.5) * 200 - dir.y * r,
+    (Math.random()-0.5) * 400 - dir.z * r,
+  );
+  const count = 12 + Math.floor(Math.random() * 20);
+  for (let i = 0; i < count; i++) {
+    meteors.push(spawnMeteor(dir, baseOrigin, true));
+  }
+}
+
+function updateMeteors(dt) {
+  meteorTimer -= dt;
+  if (meteorTimer <= 0) {
+    meteors.push(spawnMeteor(null, null, false));
+    meteorTimer = 5 + Math.random() * 15;
+  }
+  showerTimer -= dt;
+  if (showerTimer <= 0) {
+    triggerShower();
+    showerTimer = 35 + Math.random() * 45;
+  }
+
+  for (let i = meteors.length - 1; i >= 0; i--) {
+    const m = meteors[i];
+    m.age += dt;
+    if (m.age < 0) continue;
+    const t = m.age / m.life;
+
+    if (t > 1.5) {
+      scene.remove(m.line);
+      scene.remove(m.headSprite);
+      m.geo.dispose();
+      m.mat.dispose();
+      m.headMat.dispose();
+      meteors.splice(i, 1);
+      continue;
+    }
+
+    m.head.addScaledVector(m.dir, m.speed);
+
+    const trailLen = Math.min(m.tailLen, m.drawn + 2);
+    for (let j = trailLen - 1; j > 0; j--) {
+      m.positions[j*3]   = m.positions[(j-1)*3];
+      m.positions[j*3+1] = m.positions[(j-1)*3+1];
+      m.positions[j*3+2] = m.positions[(j-1)*3+2];
+    }
+    m.positions[0] = m.head.x;
+    m.positions[1] = m.head.y;
+    m.positions[2] = m.head.z;
+    m.drawn = Math.min(m.drawn + 2, m.tailLen);
+
+    const globalFade = t < 0.08 ? t / 0.08 : t < 1.0 ? 1 : Math.max(0, 1 - (t - 1) * 2);
+    m.mat.opacity = globalFade * (0.4 + m.scale * 0.3);
+    m.geo.setDrawRange(0, m.drawn);
+    m.geo.attributes.position.needsUpdate = true;
+    m.line.visible = true;
+
+    m.headSprite.position.set(m.head.x, m.head.y, m.head.z);
+    m.headMat.opacity = globalFade * Math.min(1, m.glow * 0.5);
+    m.headSprite.visible = t < 1.1;
+  }
+}
+
+// ── Animate ────────────────────────────────────────────
+let lastTime = Date.now();
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  if (tickFn) tickFn();
+
+  const now = Date.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+  updateMeteors(dt);
+
+  const t = now * 0.0016;
+
+  pinnedMeshes.forEach(mesh => {
+    if (mesh === selected) return;
+    const { breathPhase, breathSpeed, breathAmp } = mesh.userData;
+    const s = Math.sin(t * breathSpeed + breathPhase);
+    mesh.scale.setScalar(1 + breathAmp * s);
+    const d = mesh.userData.node;
+    const bright = logMap(d.importance, 1.8, 3.2) * (1 + breathAmp * 2.2 * s);
+    mesh.material.color.copy(baseColor(d)).multiplyScalar(bright);
+  });
+
+  linkedMeshes.forEach(mesh => {
+    if (mesh === selected) return;
+    const d = mesh.userData.node;
+    const c = baseColor(d);
+    const boostPulse = 1.6 + Math.sin(now * 0.003 + mesh.id * 0.5) * 0.2;
+    c.multiplyScalar(boostPulse);
+    mesh.material.color.copy(c);
+    if (mesh !== hovered) mesh.scale.setScalar(mesh.userData.baseScale * 1.15);
+  });
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(allMeshes);
+
+  if (hits.length) {
+    const mesh = hits[0].object;
+    const d = mesh.userData.node;
+
+    if (mesh !== hovered) {
+      if (hovered && hovered !== selected) hovered.scale.setScalar(hovered.userData.baseScale);
+      hovered = mesh;
+      if (mesh !== selected) mesh.scale.setScalar(mesh.userData.baseScale * 1.25);
+    }
+
+    tooltip.textContent = d.name;
+    tooltip.style.opacity = '1';
+  } else {
+    if (hovered && hovered !== selected) {
+      hovered.scale.setScalar(hovered.userData.baseScale);
+      hovered = null;
+    } else if (hovered && !hits.length) {
+      hovered = null;
+    }
+    tooltip.style.opacity = '0';
+  }
+
+  if (selected && card.classList.contains('open')) {
+    positionCard(selected);
+  }
+
+  composer.render();
+}
+
+main();
+animate();
+</script>
+<a id="exit" href="/" aria-label="回家">‹ 回家</a>
+<div id="skytitle"><b>记忆星图</b><span id="skycount">正在点亮…</span></div>
+<style>
+#skytitle{position:fixed;left:16px;top:calc(env(safe-area-inset-top) + 54px);z-index:99;
+  font:-apple-system,"PingFang SC",sans-serif;color:#e8edf5;pointer-events:none}
+#skytitle b{display:block;font-size:19px;font-weight:500;letter-spacing:.04em}
+#skytitle span{display:block;margin-top:3px;font-size:11px;color:rgba(232,237,245,.5)}
+#exit{position:fixed;left:14px;top:calc(env(safe-area-inset-top) + 14px);z-index:99;
+  font:13px -apple-system,"PingFang SC",sans-serif;color:#cdd6e4;text-decoration:none;
+  background:rgba(30,38,55,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);
+  padding:8px 14px;border-radius:18px}
+#exit:active{background:rgba(60,72,95,.7)}
+</style>
+</body>
+</html>

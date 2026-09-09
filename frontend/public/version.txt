@@ -1,0 +1,4 @@
+paihome build marker
+date: 2026-08-10
+chat: dwell/Claude 复刻 (思考弹窗/代码块/玻璃输入栏/doing药丸/房间切换置顶)
+marker: chat-v2-dwell
