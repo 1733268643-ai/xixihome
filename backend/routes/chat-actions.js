@@ -1,31 +1,10 @@
 import express from 'express';
 import { requireChatActionKey } from '../lib/chat-action-auth.js';
-import { callGuchuanTool } from '../lib/guchuan-tools-client.js';
 import { getStartupMemory, getRecentDiaries, getMemoryFile, searchMemory } from '../lib/github-memory-reader.js';
 
 const router = express.Router();
 
 router.use(requireChatActionKey);
-
-router.get('/status', async (_req, res, next) => {
-  try {
-    res.json(await callGuchuanTool('/status'));
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.get('/activity', async (req, res, next) => {
-  try {
-    res.json(await callGuchuanTool('/activity', {
-      limit: req.query.limit,
-      from: req.query.from,
-      to: req.query.to,
-    }));
-  } catch (e) {
-    next(e);
-  }
-});
 
 router.get('/memory/startup', async (_req, res, next) => {
   try {

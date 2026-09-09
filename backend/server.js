@@ -12,15 +12,12 @@ import { decayTick } from './lib/memoryDecay.js';
 import { pushBark } from './lib/bark.js';
 import { syncGitHubMemory } from './lib/githubMemorySync.js';
 import toolsRouter, { handleActivityQuery } from './routes/tools.js';
-import guchuanToolsProxyRouter from './routes/guchuan-tools.js';
 import chatActionsRouter from './routes/chat-actions.js';
 import { requireToolsSecret } from './lib/tools/auth.js';
 import { getMindState, searchMemories, getMemoryMap, xinchaoConfigured, ombreConfigured, xinchaoEvent } from './lib/mind-client.js';
 import lifeRouter from './routes/life.js';
 import connectRouter from './routes/connect.js';
-import { voiceHttpProxy, attachVoiceUpgrade } from './lib/voice-proxy.js';
 import * as bridgeChat from './lib/bridge-chat.js';
-import * as codexBridge from './lib/codex-bridge.js';
 
 const app = express();
 app.use(cors());
@@ -307,9 +304,6 @@ app.use('/api', (req, res, next) => {
   }
   next();
 });
-
-// ---- 顾川工具库调用端代理：后端自动带 secret，前端永远看不到 ----
-app.use('/api/guchuan-tools', guchuanToolsProxyRouter);
 
 // ---- 可切换的模型清单（前端下拉用）----
 app.get('/api/models', async (_req, res, next) => {
@@ -1085,41 +1079,6 @@ app.post('/api/bridge/chat/send', (req, res) => {
   res.json({ ok: true, record: rec });
 });
 
-// ---- Codex 桥：手机 PaiHome 的“顾川 · Codex”窗口 ----
-// Codex App Server 只走本机 stdio，不向公网暴露控制端口。
-app.get('/api/codex/chat', async (req, res, next) => {
-  try {
-    res.json({ records: codexBridge.history({ limit: req.query.limit }), ...(await codexBridge.status()) });
-  } catch (e) { next(e); }
-});
-
-app.get('/api/codex/models', async (_req, res, next) => {
-  try { res.json(await codexBridge.models()); } catch (e) { next(e); }
-});
-
-app.post('/api/codex/settings', async (req, res, next) => {
-  try { res.json(await codexBridge.setSettings(req.body || {})); } catch (e) { next(e); }
-});
-
-app.post('/api/codex/chat/send', async (req, res, next) => {
-  try {
-    res.json(await codexBridge.send({ text: req.body?.text, image: req.body?.image }));
-  } catch (e) { next(e); }
-});
-
-app.post('/api/codex/chat/interrupt', async (_req, res, next) => {
-  try { res.json(await codexBridge.interrupt()); } catch (e) { next(e); }
-});
-
-app.post('/api/codex/chat/new', async (_req, res, next) => {
-  try { res.json(await codexBridge.newThread()); } catch (e) { next(e); }
-});
-
-app.post('/api/codex/approvals/:id', (req, res, next) => {
-  try { res.json(codexBridge.decideApproval(req.params.id, String(req.body?.decision || ''))); }
-  catch (e) { next(e); }
-});
-
 // PostToolUse hook 回传工具调用（scripts/paihome-tool-hook.sh 调用，token 鉴权）
 // body: { win?, name, detail?, status: 'ok'|'error', output? }
 app.post('/api/bridge/tool', express.json({ limit: '1mb' }), (req, res) => {
@@ -1296,12 +1255,9 @@ app.get('/api/calls/:file', async (req, res) => {
   }
 });
 
-// ---- 实时通话：HTTP 部分（测试页 /voice/、健康 /voice/health）----
-app.use('/voice', (req, res) => { req.url = '/voice' + req.url; voiceHttpProxy(req, res); });
-
 // ---- 错误处理 ----
 // SPA 兜底：非 API/媒体路径都回 index.html（永远重新校验，避免旧壳）
-app.get(/^\/(?!api\/|voice\/|static\/|bridge-media\/).*/, (req, res, next) => {
+app.get(/^\/(?!api\/|static\/|bridge-media\/).*/, (req, res, next) => {
   res.setHeader('cache-control', 'no-cache');
   res.sendFile(join(__v2dist, 'index.html'), (e) => { if (e) next(); });
 });
@@ -1350,12 +1306,8 @@ const httpServer = app.listen(cfg.port, () => {
   console.log('🌊 记忆衰减已启动，每小时跑一次');
 });
 
-// ---- 实时语音/视频通话反代（video/server.py）----
-attachVoiceUpgrade(httpServer);
-
 function shutdown(signal) {
-  console.log(`\n${signal}: 正在收好 Codex 桥并熄灯…`);
-  codexBridge.shutdown();
+  console.log(`\n${signal}: 正在熄灯…`);
   httpServer.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 5000).unref();
 }
