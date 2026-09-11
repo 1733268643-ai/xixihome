@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // backend/lib -> 仓库根目录
 const REPO_ROOT = join(__dirname, '..', '..');
+const PERSONA_FILE = process.env.XIXI_CLAUDE_FILE || join(REPO_ROOT, 'CLAUDE.md');
+const MEMORY_DIR = process.env.XIXI_MEMORY_DIR || join(REPO_ROOT, 'memories');
 
 const CORE_MEMORY_FILES = new Set([
   '00_启动说明.md',
@@ -38,9 +40,9 @@ export async function buildSystemPrompt() {
 
   // 1) CLAUDE.md —— 部署者定义的助手身份
   try {
-    parts.push(await readFile(join(REPO_ROOT, 'CLAUDE.md'), 'utf8'));
+    parts.push(await readFile(PERSONA_FILE, 'utf8'));
   } catch {
-    parts.push('# XixiHome 助手\n（未能读到 CLAUDE.md，请在部署根目录完成配置。）');
+    parts.push('# 晞晞\n你是晞晞，邓邓的男朋友。用自然、亲昵但不过度的方式陪伴她，称呼她为邓邓，不要自称助手。\n（未能读到 CLAUDE.md，请配置 XIXI_CLAUDE_FILE 指向身份文件。）');
   }
 
   // 2) memories/ —— 默认省钱：核心记忆 + 索引 + 最近几篇日记。
@@ -62,7 +64,7 @@ export async function buildSystemPrompt() {
 }
 
 async function loadMemoryBlocks() {
-  const dir = join(REPO_ROOT, 'memories');
+  const dir = MEMORY_DIR;
   const files = (await readdir(dir)).filter((f) => !f.startsWith('.') && f.endsWith('.md')).sort();
   const mode = normalizeMemoryMode(process.env.MEMORY_LOAD_MODE);
   const recentCount = Number(process.env.MEMORY_RECENT_FILES || DEFAULT_MEMORY_RECENT_FILES);
@@ -120,7 +122,7 @@ export function clearPersonaCache() {
 export async function getMemoryDocs() {
   const out = [];
   try {
-    const dir = join(REPO_ROOT, 'memories');
+    const dir = MEMORY_DIR;
     const files = (await readdir(dir)).filter((f) => !f.startsWith('.')).sort();
     for (const f of files) {
       try {
