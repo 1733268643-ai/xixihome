@@ -7,6 +7,7 @@ import { buildSystemPrompt, clearPersonaCache, getMemoryDocs } from './lib/perso
 import { chatComplete, summarize, chatStreamCLI, chatCompleteCLI } from './lib/model.js';
 import * as store from './lib/store.js';
 import { updateSensorData, getEnvState, getEnvironmentSensation, buildEnvironmentPrompt } from './lib/environment.js';
+import { fetchWeather } from './lib/weather.js';
 import { reportActivity, reportChat, getDreamState, wake } from './lib/dream.js';
 import { decayTick } from './lib/memoryDecay.js';
 import { pushBark } from './lib/bark.js';
@@ -411,6 +412,16 @@ app.get('/api/environment', async (_req, res, next) => {
   try {
     const sensation = await getEnvironmentSensation();
     res.json({ env: getEnvState(), sensation });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get('/api/weather', async (_req, res, next) => {
+  try {
+    const { location } = getEnvState();
+    const weather = await fetchWeather(location.lat, location.lon);
+    res.json({ weather });
   } catch (e) {
     next(e);
   }
