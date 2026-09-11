@@ -177,7 +177,7 @@ export default function App() {
 
   // 记忆星图：OB pulse 的全量桶元数据（真实）
   const loadMap = useCallback(async () => {
-    try { setMap(await api('/api/mind/map')); }
+    try { setMap(await api('/api/star-map')); }
     catch { setMap({ available: false, reason: 'network' }); }
   }, [api]);
 
