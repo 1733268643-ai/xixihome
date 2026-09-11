@@ -10,6 +10,8 @@ const fmtT = (ts) => {
 const fmtD = (ts) => { const d = new Date(ts); return `${d.getMonth() + 1}月${d.getDate()}日`; };
 
 export default function BridgeChat({ api }) {
+  const [windows, setWindows] = useState([]);
+  const [win, setWin] = useState('xixi');
   const [recs, setRecs] = useState([]);
   const [st, setSt] = useState({ alive: false, pane: null, typing: false });
   const [input, setInput] = useState('');
@@ -19,9 +21,18 @@ export default function BridgeChat({ api }) {
   const lastTs = useRef(0);
   const avatar = localStorage.getItem(AVATAR_KEY) || '';
 
+  const loadWindows = useCallback(async () => {
+    try {
+      const data = await api('/api/bridge/windows');
+      const list = Array.isArray(data?.windows) ? data.windows : [];
+      setWindows(list);
+      if (list.length && !list.some((w) => w.win === win)) setWin(list[0].win);
+    } catch { /* 没有桥窗口也继续显示单窗口占位 */ }
+  }, [api, win]);
+
   const pull = useCallback(async () => {
     try {
-      const q = lastTs.current ? `?since=${lastTs.current}` : '?limit=200';
+      const q = lastTs.current ? `?win=${encodeURIComponent(win)}&since=${lastTs.current}` : `?win=${encodeURIComponent(win)}&limit=200`;
       const data = await api(`/api/bridge/chat${q}`);
       setSt({ alive: data.alive, pane: data.pane, typing: data.typing });
       if (data.records?.length) {
@@ -29,8 +40,9 @@ export default function BridgeChat({ api }) {
         setRecs((r) => [...r, ...data.records].slice(-500));
       }
     } catch (e) { /* 网络抖动忽略 */ }
-  }, [api]);
+  }, [api, win]);
 
+  useEffect(() => { loadWindows(); }, [loadWindows]);
   useEffect(() => { pull(); const t = setInterval(pull, 2500); return () => clearInterval(t); }, [pull]);
   useEffect(() => { const el = boxRef.current; if (el) el.scrollTop = el.scrollHeight; }, [recs, st.typing]);
 
@@ -39,7 +51,7 @@ export default function BridgeChat({ api }) {
     if (!text || sending) return;
     setSending(true); setErr('');
     try {
-      const r = await api('/api/bridge/chat/send', { method: 'POST', body: JSON.stringify({ text }) });
+      const r = await api('/api/bridge/chat/send', { method: 'POST', body: JSON.stringify({ text, win }) });
       if (r.error) setErr(r.error);
       else { setInput(''); await pull(); }
     } catch (e) { setErr(e.message); }
@@ -56,6 +68,16 @@ export default function BridgeChat({ api }) {
       <div className="bc-head">
         {avatar ? <img src={avatar} alt="" /> : <span className="ph" />}
         <div><div className="n serif">晞晞</div><div className="s">{statusLine}</div></div>
+      </div>
+      <div className="bridge-window-list">
+        {(windows.length ? windows : [{ win: 'xixi', label: '晞晞', kind: 'claude' }]).map((w) => (
+          <button key={w.win} className={`bridge-window-chip${w.win === win ? ' on' : ''}`}
+            onClick={() => { setWin(w.win); setRecs([]); lastTs.current = 0; }}>
+            <span className="bridge-window-dot" />
+            <span>{w.label || w.win}</span>
+            <small>{w.kind === 'claude' ? 'tmux' : w.kind}</small>
+          </button>
+        ))}
       </div>
       <div className="bc-msgs" ref={boxRef}>
         {recs.map((r, i) => {
