@@ -175,7 +175,7 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
 }
 
 /* ═══ 内在 ═══ */
-export function InnerPage({ mind, memories, memQuery, onSearch, searching, tab, setTab, map, onReadMemory }) {
+export function InnerPage({ mind, memories, memQuery, onSearch, searching, tab, setTab, map, onReadMemory, api }) {
   return (
     <>
       <div className="eb">Inner · 他的内在</div>
@@ -200,7 +200,7 @@ export function InnerPage({ mind, memories, memQuery, onSearch, searching, tab, 
 
           <Sec more="点一片花瓣">欲望</Sec>
           <Card style={{ padding: '8px 6px' }}>
-            <Flower drives={mind.drives} consciousness={mind.consciousness} />
+            <Flower drives={mind.drives} consciousness={mind.consciousness} api={api} />
           </Card>
 
           <Sec more={`${mind.dreams?.length || 0} 个`}>最近的梦</Sec>

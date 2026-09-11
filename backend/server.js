@@ -861,6 +861,16 @@ app.get('/api/mind/state', async (_req, res) => {
   res.json({ ...s, bark: { lastAt: items[0]?.at || null, items } });
 });
 
+app.get('/api/drives', async (_req, res) => {
+  const s = await getMindState();
+  res.json({
+    available: s.available,
+    reason: s.reason || null,
+    consciousness: s.consciousness || null,
+    drives: s.drives || [],
+  });
+});
+
 app.get('/api/mind/memories', async (req, res) => {
   const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   const limit = clampNumber(req.query.limit, 10, 1, 30);
