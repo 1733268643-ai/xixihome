@@ -1103,3 +1103,9 @@ code.ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-r
   .session-orbit { width: 43px; height: 43px; border-radius: 14px; }
   .session-copy b { font-size: 15px; }
 }
+
+.bridge-window-list { display:flex; gap:8px; padding:0 14px 10px; overflow-x:auto; flex:none; }
+.bridge-window-chip { flex:none; display:flex; align-items:center; gap:7px; min-height:32px; padding:0 11px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--muted); }
+.bridge-window-chip.on { color:var(--ink); border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); background:color-mix(in srgb,var(--accent) 10%,var(--card)); }
+.bridge-window-dot { width:7px; height:7px; border-radius:50%; background:var(--sage); flex:none; }
+.bridge-window-chip small { font-size:9px; opacity:.75; letter-spacing:.08em; }
