@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 /**
  * 欲望花：12 片圆头花瓣，长度＝真实欲望数值。
@@ -30,8 +30,26 @@ function tone(v, grey) {
   };
 }
 
-export default function Flower({ drives, consciousness }) {
+export default function Flower({ drives: drivesProp, consciousness: consciousnessProp, api }) {
   const [sel, setSel] = useState(-1);
+  const [localDrives, setLocalDrives] = useState(null);
+  const [localConsciousness, setLocalConsciousness] = useState(null);
+  const drives = drivesProp || localDrives || [];
+  const consciousness = consciousnessProp ?? localConsciousness;
+
+  useEffect(() => {
+    if (!api || drivesProp) return;
+    let cancelled = false;
+    api('/api/drives')
+      .then((data) => {
+        if (cancelled || !data?.available) return;
+        setLocalDrives(data.drives || []);
+        setLocalConsciousness(data.consciousness || null);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [api, drivesProp]);
+
   const n = drives?.length || 0;
 
   const petals = useMemo(() => (drives || []).map((d, i) => {
