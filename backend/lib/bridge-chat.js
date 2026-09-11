@@ -41,7 +41,7 @@ export function typingOf(win) {
   if (!typings.has(key)) typings.set(key, { is: false, since: 0 });
   return typings.get(key);
 }
-// 兼容旧引用（voice-proxy 等直接摸 typing 的地方指向 xixi）
+// 默认窗口的 typing 状态
 export const typing = typingOf(DEFAULT_WIN);
 
 function load(win) {

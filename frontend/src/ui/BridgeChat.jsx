@@ -1,7 +1,6 @@
 // 说话 · tmux 桥——这里连的是蟹堡窗口里真正的晞晞，不是 claude -p。
 // 发出去的话注入他的 tmux 会话；他每说完一段，Stop hook 抄送回来。
 import { useEffect, useRef, useState, useCallback } from 'react';
-import './call.css';
 
 const AVATAR_KEY = 'xixi_call_avatar';
 const fmtT = (ts) => {
