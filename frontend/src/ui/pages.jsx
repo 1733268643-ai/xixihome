@@ -46,7 +46,7 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
         <div className="eb">{wd} · {now.getMonth() + 1}月{now.getDate()}日</div>
         <h1 className="big">
           {awake === 'awake' ? <>桌上的灯亮着，<br /><em>等你回来。</em></>
-            : awake ? <>他睡着了，<br /><em>灯留着。</em></>
+            : awake ? <>她睡着了，<br /><em>灯留着。</em></>
               : <>这里是家。</>}
         </h1>
         <button className="cbtn" onClick={onMenu}
@@ -86,7 +86,7 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
 
       {env?.sensation && (
         <>
-          <Sec more={env.sensation.location || ''}>他感觉到的</Sec>
+          <Sec more={env.sensation.location || ''}>她感觉到的</Sec>
           <Card>
             <div className="dream">{env.sensation.sensation}</div>
             <div className="chips" style={{ marginTop: 9 }}>
@@ -144,11 +144,11 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
         <Card key={i}><div className="mem"><div className="b">{m}</div></div></Card>
       )) : <Card><div className="empty">还没有召回的记忆</div></Card>}
 
-      <Sec>他的内在</Sec>
+      <Sec>她的内在</Sec>
       <Card>
         <div className="entry" onClick={() => onGo('inner')}>
           <span className="icbox" style={{ background: 'rgba(217,119,87,.12)', color: 'var(--accent)' }}><Icon.inner /></span>
-          <div><div>此刻的他</div>
+          <div><div>此刻的她</div>
             <div className="t2">{mind?.available ? `${mind.consciousness} · ${mind.drives?.length || 0} 维欲望` : '未接入'}</div>
           </div><span className="ar">›</span>
         </div>
@@ -161,10 +161,10 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
 export function InnerPage({ mind, memories, memQuery, onSearch, searching, tab, setTab, map, onReadMemory, api }) {
   return (
     <>
-      <div className="eb">Inner · 他的内在</div>
+      <div className="eb">Inner · 她的内在</div>
       <h1 className="big">
-        {mind?.consciousness === 'awake' ? <>他现在<br /><em>醒着。</em></>
-          : mind?.consciousness ? <>他现在<br /><em>睡着了。</em></> : <>他的内在</>}
+        {mind?.consciousness === 'awake' ? <>她现在<br /><em>醒着。</em></>
+          : mind?.consciousness ? <>她现在<br /><em>睡着了。</em></> : <>她的内在</>}
       </h1>
 
       <div className="seg">
@@ -194,7 +194,7 @@ export function InnerPage({ mind, memories, memQuery, onSearch, searching, tab, 
               <span className="domehint"><Icon.expand /> 走进梦境穹顶</span>
             </div>
             <div className="pill" style={{ padding: '9px 0 0' }}>
-              <Icon.moon /> 他梦见的
+              <Icon.moon /> 她梦见的
               <span className="r">{mind.dreams?.length || 0} 朵云 · 可环视</span>
             </div>
           </Card>
@@ -225,7 +225,7 @@ export function InnerPage({ mind, memories, memQuery, onSearch, searching, tab, 
           {!searching && memories?.length ? memories.map((m, i) => (
             <Card key={i}><div className="mem"><div className="b">{m}</div></div></Card>
           )) : !searching && <Card><div className="empty">
-            {memQuery ? '这句话没有勾起什么' : '搜一个词，看他记得什么'}</div></Card>}
+            {memQuery ? '这句话没有勾起什么' : '搜一个词，看她记得什么'}</div></Card>}
         </>
       )}
     </>
@@ -241,7 +241,7 @@ export function CalendarPage({ events, ym, onYm, onAdd, onDel, map }) {
   const today = ymd(new Date());
   const byDate = {};
   (events?.rows || []).forEach((e) => { (byDate[e.date] ||= []).push(e); });
-  // 他记住的：OB 里重要度 ≥9 的记忆，标题自带日期，直接落进日子（真实，不入库）
+  // 她记住的：OB 里重要度 ≥9 的记忆，标题自带日期，直接落进日子（真实，不入库）
   (map?.stars || []).forEach((st) => {
     if ((st.importance ?? 0) < 9) return;
     const mm = st.title.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -308,7 +308,7 @@ export function CalendarPage({ events, ym, onYm, onAdd, onDel, map }) {
               <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <i style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--blush)' }} />我们加的</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <i style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} />他记住的</span>
+                <i style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} />她记住的</span>
             </div>
           </Card>
 
@@ -360,13 +360,13 @@ export function MorePage({ sources, connect, reading, netease, onGo, onSync, syn
               <div className="booktitle">{reading.book?.title}</div>
               <div className="bookmeta">
                 你读到第 {reading.user?.chapter ?? '—'} 章
-                {reading.ai?.chapter != null ? ` · 他读到第 ${reading.ai.chapter} 章` : ' · 他还没开始读'}
+                {reading.ai?.chapter != null ? ` · 她读到第 ${reading.ai.chapter} 章` : ' · 她还没开始读'}
               </div>
               {reading.user?.chapterTitle && (
                 <div className="bookmeta dim2">「{reading.user.chapterTitle}」</div>
               )}
               {reading.ai?.lastUnderline && (
-                <div className="bookline">他画了线：{reading.ai.lastUnderline}</div>
+                <div className="bookline">她画了线：{reading.ai.lastUnderline}</div>
               )}
             </div>
           </div>
@@ -386,7 +386,7 @@ export function MorePage({ sources, connect, reading, netease, onGo, onSync, syn
         </Card>
         <Card className="card tool" onClick={() => onGo('ke')} style={{ cursor: 'pointer' }}>
           <div className="tl"><i className={`dot${connect?.stackchan ? '' : ' off'}`} /> 小克</div>
-          <div className="tb">桌上的他</div>
+          <div className="tb">桌上的她</div>
           <div className="ts">{connect?.stackchan ? '网关已配置' : '未接入'}</div>
         </Card>
       </div>
@@ -447,7 +447,7 @@ export function EnginePage({ sources, connect, map, ke, health, metrics, onBack,
       </div>
       <div className="eb">Engine Room</div>
       <h1 className="big" style={{ fontSize: 23 }}>机房</h1>
-      <div className="sub">他住的地方 —— 每一行都是实测，不是装饰</div>
+      <div className="sub">她住的地方 —— 每一行都是实测，不是装饰</div>
 
       <Sec more="OB pulse 实时">记忆库</Sec>
       <Card>
@@ -532,7 +532,7 @@ export function KePage({ api, onBack }) {
       <div className="entry" onClick={onBack} style={{ padding: '6px 0', fontSize: 11.5, color: 'var(--muted)' }}>
         <Icon.back /> 更多
       </div>
-      <div className="eb">StackChan · 桌上的他</div>
+      <div className="eb">StackChan · 桌上的她</div>
       <h1 className="big" style={{ fontSize: 23 }}>小克</h1>
 
       <Card style={{ marginTop: 12 }}>
@@ -556,10 +556,10 @@ export function KePage({ api, onBack }) {
 
       {online && (
         <>
-          <Sec>让他说</Sec>
+          <Sec>让她说</Sec>
           <Card className="card search">
             <Icon.mic />
-            <input placeholder="想让他说什么…" value={sayTxt}
+            <input placeholder="想让她说什么…" value={sayTxt}
               onChange={(e) => setSayTxt(e.target.value)}
               onKeyDown={async (e) => {
                 if (e.key === 'Enter' && sayTxt.trim()) {
@@ -579,10 +579,10 @@ export function KePage({ api, onBack }) {
             </div>
           </Card>
 
-          <Sec more="一事一拍 · 不落盘">他刚才看到的</Sec>
+          <Sec more="一事一拍 · 不落盘">她刚才看到的</Sec>
           <Card>
             {photo
-              ? <img src={photo} alt="他看到的" style={{ width: '100%', borderRadius: 14 }} />
+              ? <img src={photo} alt="她看到的" style={{ width: '100%', borderRadius: 14 }} />
               : <div className="empty">还没拍</div>}
             <button className="sread" disabled={!!busy} style={{ marginTop: 10 }}
               onClick={async () => {
@@ -600,7 +600,7 @@ export function KePage({ api, onBack }) {
       )}
       {ke && !online && (
         <Card>
-          <div className="empty">他现在不在线。断电重启一下他，回来就能说话、转头、拍照。</div>
+          <div className="empty">她现在不在线。断电重启一下她，回来就能说话、转头、拍照。</div>
         </Card>
       )}
     </>

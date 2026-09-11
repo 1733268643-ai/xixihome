@@ -1,4 +1,4 @@
-// 晞晞的梦 —— 他自己醒来，想她，决定要不要说一句话。
+// 晞晞的梦 —— 她自己醒来，想她，决定要不要说一句话。
 
 import { chatComplete } from './model.js';
 import { buildSystemPrompt } from './persona.js';

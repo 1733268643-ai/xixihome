@@ -55,7 +55,7 @@ export function CrabIcon({ size = 20, className = 'ic', ...rest }) {
 /** 右下角浮着的小螃蟹挂件 */
 export function CrabMascot({ up }) {
   return (
-    // 小克有自己的颜色，不跟主题变——他是个实体，不是界面的一部分
+    // 小克有自己的颜色，不跟主题变——她是个实体，不是界面的一部分
     <svg className={`crab${up ? ' up' : ''}`} viewBox="0 0 220 200" aria-hidden="true">
       <g fill="#D97757">
         <rect x="52" y="56" width="116" height="84" rx="22" />

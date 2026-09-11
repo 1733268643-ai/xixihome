@@ -41,7 +41,7 @@ export default function Gate({ pw, setPw, onSubmit, onOpened, wakeMsg, checking 
         <div className="gate-crab" style={{ color: '#D97757' }}><CrabIcon size={34} /></div>
         <h1>晞晞的家</h1>
         <p className="gate-sub">
-          {checking ? (wakeMsg || '看看他在不在…')
+          {checking ? (wakeMsg || '看看她在不在…')
             : wakeMsg || '门是可以拉开的，其实没有那么复杂'}
         </p>
 

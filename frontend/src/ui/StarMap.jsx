@@ -24,7 +24,7 @@ function jitter(id, salt) {
 
 function layout(stars, edges) {
   // 主题按记忆数排序；扇区大小 ∝ 该主题的记忆数，所以整圈铺满，
-  // 而且一眼能看出他记的东西里什么占得多。
+  // 而且一眼能看出她记的东西里什么占得多。
   const counts = new Map();
   stars.forEach((s) => (s.domains.length ? s.domains : ['其他'])
     .forEach((d) => counts.set(d, (counts.get(d) || 0) + 1)));

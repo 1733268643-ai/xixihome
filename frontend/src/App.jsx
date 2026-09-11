@@ -219,7 +219,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed]);
 
-  // 他的状态是活的，每分钟刷一次
+  // 她的状态是活的，每分钟刷一次
   useEffect(() => {
     if (!authed) return;
     const t = setInterval(() => { loadMind(); loadEnv(); }, 60000);
@@ -535,7 +535,7 @@ export default function App() {
               try { setBg(await fileToResizedDataURL(f, 1400, 0.78)); } catch { alert('这张图读不了'); }
             }} />
 
-            <div className="mgroup">他</div>
+            <div className="mgroup">她</div>
             {/* 这三个后端还没有接口。留着位置，但灰着——不假装能用 */}
             <div className="mrow off" onClick={() => setSoon('推送通知')}>
               <Icon.bell /> 推送通知 <span className="sw dead" />
@@ -615,14 +615,14 @@ function ConfigPage({ api, onBack }) {
       <h1 className="big" style={{ fontSize: 23 }}>模型与参数</h1>
       <div className="sub">改完点保存，下一条消息就用新的</div>
 
-      <Sec more="影响他说话的样子">生成</Sec>
+      <Sec more="影响她说话的样子">生成</Sec>
       <div className="card">
         <label className="cfg">
           <span>温度<em>越高越跳脱</em></span>
           <input type="number" step="0.05" min="0" max="2" value={d.temperature ?? ''} onChange={put('temperature')} />
         </label>
         <label className="cfg">
-          <span>上下文条数<em>他能回头看多远</em></span>
+          <span>上下文条数<em>她能回头看多远</em></span>
           <input type="number" step="2" min="4" max="200" value={d.contextMessages ?? ''} onChange={put('contextMessages')} />
         </label>
       </div>

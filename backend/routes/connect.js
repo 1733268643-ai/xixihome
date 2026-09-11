@@ -90,7 +90,7 @@ async function neteaseCall(tool, args = {}) {
 // ── 路由 ─────────────────────────────────────────────────
 const router = express.Router();
 
-/** 在读卡片：书名 + 两个人各读到哪 + 他画的线 */
+/** 在读卡片：书名 + 两个人各读到哪 + 她画的线 */
 router.get('/reading/card', async (_req, res) => {
   if (!READING_TOKEN) return res.json({ available: false, reason: 'not_configured' });
   try {

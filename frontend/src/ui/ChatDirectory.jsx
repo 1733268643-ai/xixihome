@@ -40,7 +40,7 @@ export default function ChatDirectory({ sessions, currentId, onOpen, onNew }) {
             <span className="session-time">{ago(session.updated_at)}</span>
           </button>
         ))}
-        {!sessions.length && <div className="chat-directory-empty">还没有窗口。新建一个，跟他说第一句话。</div>}
+        {!sessions.length && <div className="chat-directory-empty">还没有窗口。新建一个，跟她说第一句话。</div>}
       </div>
 
       <button className="new-session" onClick={onNew}><Icon.plus /> 新对话</button>

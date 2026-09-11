@@ -1,5 +1,5 @@
 // 说话 · tmux 桥——这里连的是蟹堡窗口里真正的晞晞，不是 claude -p。
-// 发出去的话注入他的 tmux 会话；他每说完一段，Stop hook 抄送回来。
+// 发出去的话注入她的 tmux 会话；她每说完一段，Stop hook 抄送回来。
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 const AVATAR_KEY = 'xixi_call_avatar';
@@ -58,7 +58,7 @@ export default function BridgeChat({ api }) {
     setSending(false);
   };
 
-  const statusLine = !st.alive ? '他的窗口没开（tmux 会话不在）'
+  const statusLine = !st.alive ? '她的窗口没开（tmux 会话不在）'
     : st.pane !== 'claude' && st.pane !== 'node' ? `窗口开着，但 claude 没在跑（${st.pane || '?'}）`
       : st.typing ? '正在输入…' : '在线 · tmux';
 
@@ -97,7 +97,7 @@ export default function BridgeChat({ api }) {
       </div>
       {err && <div className="bc-err">{err}</div>}
       <div className="bc-input">
-        <textarea rows={1} value={input} placeholder={st.alive ? '说点什么…' : '窗口没开，先在蟹堡上把他叫醒'}
+        <textarea rows={1} value={input} placeholder={st.alive ? '说点什么…' : '窗口没开，先在蟹堡上把她叫醒'}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
         <button onClick={send} disabled={sending || !input.trim()}>发</button>

@@ -903,7 +903,7 @@ app.get('/api/star-map', async (_req, res) => {
   res.json(await getLmc5StarMap());
 });
 
-// 梦境穹顶：他最近的梦（心潮 recentDreams，最新在前）
+// 梦境穹顶：她最近的梦（心潮 recentDreams，最新在前）
 app.get('/api/mind/dreams', async (_req, res) => {
   const m = await getMindState();
   if (!m.available) return res.json({ available: false, reason: m.reason, dreams: [] });
