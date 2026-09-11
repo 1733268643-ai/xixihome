@@ -15,6 +15,7 @@ import toolsRouter, { handleActivityQuery } from './routes/tools.js';
 import chatActionsRouter from './routes/chat-actions.js';
 import { requireToolsSecret } from './lib/tools/auth.js';
 import { getMindState, searchMemories, getMemoryMap, xinchaoConfigured, ombreConfigured, xinchaoEvent } from './lib/mind-client.js';
+import { getLmc5StarMap } from './lib/lmc5.js';
 import lifeRouter from './routes/life.js';
 import connectRouter from './routes/connect.js';
 import * as bridgeChat from './lib/bridge-chat.js';
@@ -870,6 +871,10 @@ app.get('/api/mind/memories', async (req, res) => {
 // 记忆星图：全部记忆桶的重要度/情绪/主题（真实数据）
 app.get('/api/mind/map', async (_req, res) => {
   res.json(await getMemoryMap());
+});
+
+app.get('/api/star-map', async (_req, res) => {
+  res.json(await getLmc5StarMap());
 });
 
 // 梦境穹顶：他最近的梦（心潮 recentDreams，最新在前）

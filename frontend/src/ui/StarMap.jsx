@@ -173,9 +173,11 @@ function Detail({ s, body, loading, onRead, onClose }) {
       </div>
       {body
         ? <div className="sbody">{clean(body)}</div>
-        : <button className="sread" onClick={onRead} disabled={loading}>
-            {loading ? '取正文中…' : '读这条'}
-          </button>}
+        : s.summary
+          ? <div className="sbody">{clean(s.summary)}</div>
+          : <button className="sread" onClick={onRead} disabled={loading}>
+              {loading ? '取正文中…' : '读这条'}
+            </button>}
     </div>
   );
 }
@@ -254,7 +256,7 @@ export default function StarMap({ map, onReadMemory, embedded }) {
       {open && createPortal((
         <div className="skyfull" onClick={() => { setSel(null); }}>
           <div className="sfhead">
-            <span>记忆星图 · {map.total} 颗 · 全部来自 OB</span>
+            <span>记忆星图 · {map.total} 颗 · 全部来自 LMC-5</span>
             <span className="sfx" onClick={(e) => { e.stopPropagation(); setOpen(false); setSel(null); }}>
               <Icon.x />
             </span>
