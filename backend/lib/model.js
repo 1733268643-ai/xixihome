@@ -182,6 +182,128 @@ export async function chatComplete({
   return (data.choices?.[0]?.message?.content || '').trim();
 }
 
+// 流式 API 调用：Anthropic 和 OpenAI 兼容接口都返回逐块增量。
+// onEvent({type:'text'|'thinking', text}) 收到增量；resolve 返回完整正文。
+export async function chatStream({
+  provider,
+  apiKey,
+  baseUrl,
+  model,
+  system,
+  messages,
+  maxTokens = 1024,
+  temperature = 0.8,
+  signal,
+  onEvent,
+}) {
+  if (!apiKey) {
+    throw new Error('缺少模型 API Key——请在环境变量里配好再来。');
+  }
+
+  if (provider === 'anthropic') {
+    return streamAnthropic({ apiKey, baseUrl, model, system, messages, maxTokens, temperature, signal, onEvent });
+  }
+
+  return streamOpenAICompatible({ apiKey, baseUrl, model, system, messages, maxTokens, temperature, signal, onEvent });
+}
+
+async function streamAnthropic({ apiKey, baseUrl, model, system, messages, maxTokens, temperature, signal, onEvent }) {
+  const url = (baseUrl || 'https://api.anthropic.com') + '/v1/messages';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': ANTHROPIC_VERSION,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      system,
+      stream: true,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`Anthropic 调用失败 ${res.status}: ${await res.text()}`);
+
+  let full = '';
+  let buf = '';
+  const decoder = new TextDecoder();
+  const reader = res.body.getReader();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, idx).trim();
+      buf = buf.slice(idx + 1);
+      if (!line.startsWith('data:')) continue;
+      const raw = line.slice(5).trim();
+      if (!raw) continue;
+      let ev;
+      try { ev = JSON.parse(raw); } catch { continue; }
+      if (ev.type === 'content_block_delta' && ev.delta) {
+        if (ev.delta.type === 'text_delta' && ev.delta.text) {
+          full += ev.delta.text;
+          if (onEvent) onEvent({ type: 'text', text: ev.delta.text });
+        } else if (ev.delta.type === 'thinking_delta' && ev.delta.thinking) {
+          if (onEvent) onEvent({ type: 'thinking', text: ev.delta.thinking });
+        }
+      }
+    }
+  }
+  return full.trim();
+}
+
+async function streamOpenAICompatible({ apiKey, baseUrl, model, system, messages, maxTokens, temperature, signal, onEvent }) {
+  const url = (baseUrl || openAICompatibleBaseUrl(model)) + '/chat/completions';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      stream: true,
+      messages: [{ role: 'system', content: system }, ...messages],
+    }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`模型调用失败 ${res.status}: ${await res.text()}`);
+
+  let full = '';
+  let buf = '';
+  const decoder = new TextDecoder();
+  const reader = res.body.getReader();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, idx).trim();
+      buf = buf.slice(idx + 1);
+      if (!line.startsWith('data:')) continue;
+      const raw = line.slice(5).trim();
+      if (!raw || raw === '[DONE]') continue;
+      let ev;
+      try { ev = JSON.parse(raw); } catch { continue; }
+      const delta = ev.choices?.[0]?.delta?.content;
+      if (delta) {
+        full += delta;
+        if (onEvent) onEvent({ type: 'text', text: delta });
+      }
+    }
+  }
+  return full.trim();
+}
+
 // 把一段旧对话压缩成简短摘要，存进长期记忆。
 export async function summarize({ provider, apiKey, baseUrl, model, rounds }) {
   const transcript = rounds

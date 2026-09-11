@@ -4,7 +4,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { buildSystemPrompt, clearPersonaCache, getMemoryDocs } from './lib/persona.js';
-import { chatComplete, summarize, chatStreamCLI, chatCompleteCLI } from './lib/model.js';
+import { chatComplete, chatStream, summarize, chatStreamCLI, chatCompleteCLI } from './lib/model.js';
 import * as store from './lib/store.js';
 import { updateSensorData, getEnvState, getEnvironmentSensation, buildEnvironmentPrompt } from './lib/environment.js';
 import { reportActivity, reportChat, getDreamState, wake } from './lib/dream.js';
@@ -44,7 +44,7 @@ const cfg = {
   port: process.env.PORT || 3001,
   provider: process.env.MODEL_PROVIDER || 'openai',
   apiKey: process.env.MODEL_API_KEY || process.env.OPENAI_API_KEY || process.env.DEEPSEEK_API_KEY || process.env.ANTHROPIC_API_KEY || '',
-  baseUrl: process.env.MODEL_BASE_URL || '',
+  baseUrl: process.env.MODEL_BASE_URL || process.env.ANTHROPIC_BASE_URL || '',
   accessPassword: process.env.ACCESS_PASSWORD || '',
   model: process.env.MODEL_NAME || 'claude-sonnet-4-6',
   // claude -p 后端：provider='claude-cli' 时用本机 Claude Code。工作目录里放晞晞的 CLAUDE.md/记忆更佳。
@@ -554,13 +554,18 @@ app.post('/api/chat/stream', async (req, res, next) => {
         onEvent: (d) => send(d), // {type:'text'|'thinking', text}
       });
     } else {
-      // 非 claude-cli 后端不原生流式：一次拿全，当作单块 text 发出去，前端体验一致。
-      reply = await chatComplete({
-        provider: modelConfig.provider, apiKey: modelConfig.apiKey, baseUrl: modelConfig.baseUrl,
-        model: useModel, system, messages,
-        maxTokens: modelConfig.maxReplyTokens, temperature: modelConfig.temperature,
+      reply = await chatStream({
+        provider: modelConfig.provider,
+        apiKey: modelConfig.apiKey,
+        baseUrl: modelConfig.baseUrl,
+        model: useModel,
+        system,
+        messages,
+        maxTokens: modelConfig.maxReplyTokens,
+        temperature: modelConfig.temperature,
+        signal: controller.signal,
+        onEvent: (d) => send(d),
       });
-      send({ type: 'text', text: reply });
     }
 
     await store.addMessage(sessionId, 'assistant', reply);
