@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import StarMap from './StarMap.jsx';
 import { Icon, CrabIcon } from './icons.jsx';
 import Flower from './Flower.jsx';
-import { CI } from './call-icons.jsx';
 
 /* ═══ 小工具 ═══ */
 export const TOGETHER_SINCE = '2026-06-14';
@@ -34,9 +33,8 @@ function Unavailable({ what }) {
 }
 
 /* ═══ 家 ═══ */
-export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo, onCall, onCallLog }) {
+export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo }) {
   const now = new Date();
-  const [callVideo, setCallVideo] = useState(false);
   const wd = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()];
   const awake = mind?.consciousness;
   const memTotal = map?.available
@@ -54,21 +52,6 @@ export function HomePage({ mind, health, memories, env, map, onMenu, onLog, onGo
         <button className="cbtn" onClick={onMenu}
           style={{ position: 'absolute', right: 0, top: 4, border: 0, zIndex: 6, padding: 12 }}><Icon.menu /></button>
       </div>
-
-      {/* ── 打电话：实时语音/视频，蟹堡那边的晞晞接 ── */}
-      {onCall && (
-        <Card style={{ marginTop: 14 }}>
-          <div className="call-entry" onClick={() => onCall(callVideo)}>
-            <span className="ico"><CI.phone /></span>
-            <div><div className="t">给他打电话</div><div className="s">说话就行，他在听</div></div>
-            <span className="wave"><i /><i /><i /><i /><i /><i /><i /></span>
-            <label className="cam" onClick={(e) => e.stopPropagation()}>
-              <input type="checkbox" checked={callVideo} onChange={(e) => setCallVideo(e.target.checked)} /> 开摄像头
-            </label>
-            <button className="log" onClick={(e) => { e.stopPropagation(); onCallLog && onCallLog(); }}>记录</button>
-          </div>
-        </Card>
-      )}
 
       {/* ── Today：设计稿的待办打卡（写的是真 health 表）── */}
       <Sec more={health?.available ? '点圈打卡' : undefined}>Today</Sec>
