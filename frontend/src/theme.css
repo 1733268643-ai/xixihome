@@ -59,9 +59,9 @@ body {
 
 /* ── 玻璃卡 ── */
 .card {
-  background: linear-gradient(152deg, rgba(255,255,255,.78), rgba(255,255,255,.46));
-  backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border: .5px solid rgba(255,255,255,.85); border-radius: 20px; padding: 13px 15px; margin-bottom: 9px;
+  background: linear-gradient(152deg, rgba(255,255,255,.62), rgba(255,255,255,.28));
+  backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: .5px solid rgba(255,255,255,.72); border-radius: 22px; padding: 13px 15px; margin-bottom: 9px;
   box-shadow: 0 1px 1px rgba(255,255,255,.9) inset, 0 -1px 2px rgba(120,100,80,.04) inset,
     0 10px 30px -8px rgba(100,82,62,.13), 0 2px 6px -2px rgba(100,82,62,.06);
 }
@@ -182,8 +182,8 @@ body {
 
 /* ── 底部 tab ── */
 .tabbar { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 6;
-  background: rgba(255,255,255,.84); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: .5px solid rgba(255,255,255,.7); border-radius: 24px; display: flex; padding: 6px 4px;
+  background: rgba(255,255,255,.55); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: .5px solid rgba(255,255,255,.7); border-radius: 28px; display: flex; padding: 6px 4px;
   box-shadow: 0 8px 26px rgba(80,65,48,.14); }
 .night .tabbar { background: rgba(40,35,30,.86); border-color: rgba(255,255,255,.1); }
 .tab { flex: 1; text-align: center; padding: 5px 0 3px; border-radius: 18px; cursor: pointer;
@@ -392,6 +392,8 @@ body {
 /* ═══ 密码门：真的会拉开 ══════════════════════════════════ */
 .gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;
   justify-content:center;overflow:hidden;background:var(--bg)}
+.gate-photo{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+.gate.has-photo .door{background:rgba(255,255,255,.28);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%)}
 .gate-light{position:absolute;left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%);
   background:linear-gradient(180deg,transparent,var(--accent),transparent);
   opacity:.5;filter:blur(2.5px);animation:breathe 3.4s ease-in-out infinite}
@@ -615,9 +617,9 @@ box-shadow:0 1px 1px rgba(255,255,255,.9) inset,0 12px 34px -10px rgba(100,82,62
 .acts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .act{padding:12px 6px;text-align:center;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid var(--line);font-size:10.1px;color:var(--ink2)}
 .act .act-i{width:20px;height:20px;display:block;margin:0 auto 5px;color:var(--ink2)}
-.tabbar{position:absolute;left:12px;right:12px;bottom:12px;z-index:6;background:rgba(255,255,255,.84);
-backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.7);
-border-radius:26px;display:flex;padding:7px 4px;box-shadow:0 8px 26px rgba(80,65,48,.14)}
+.tabbar{position:absolute;left:12px;right:12px;bottom:12px;z-index:6;background:rgba(255,255,255,.55);
+backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,.7);
+border-radius:28px;display:flex;padding:7px 4px;box-shadow:0 8px 26px rgba(80,65,48,.14)}
 .tab{flex:1;text-align:center;padding:5px 0 4px;border-radius:20px;cursor:pointer;color:var(--muted);transition:.22s}
 .tab svg{width:21px;height:21px;display:block;margin:0 auto 2px;fill:none;stroke:currentColor;
   stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -1143,11 +1145,11 @@ code.ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-r
 .bchat .bc-row.you .bc-av b { color: #111; }
 .bchat .bc-stack { max-width: min(70%, 280px); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .bchat .bc-row.you .bc-stack { align-items: flex-end; }
-.bchat .bc-bub { padding: 9px 12px; border-radius: 4px; background: #fff; color: #111; line-height: 1.45;
+.bchat .bc-bub { padding: 9px 12px; border-radius: 8px; background: #fff; color: #111; line-height: 1.45;
   word-break: break-word; white-space: pre-wrap; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
 .bchat .bc-row.you .bc-bub { background: #95ec69; }
 .bchat .bc-pic { border: 0; padding: 0; background: none; cursor: pointer; }
-.bchat .bc-pic img { display: block; max-width: 160px; max-height: 180px; border-radius: 4px; object-fit: cover; }
+.bchat .bc-pic img { display: block; max-width: 160px; max-height: 180px; border-radius: 8px; object-fit: cover; }
 .bchat .bc-card { width: 230px; display: flex; gap: 8px; padding: 10px; border-radius: 4px; background: #fff;
   color: inherit; text-decoration: none; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
 .bchat .bc-card span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
@@ -1169,7 +1171,7 @@ code.ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-r
 .bchat .bc-linkbox input { flex: 1; border: 0; border-radius: 4px; padding: 8px 10px; background: #fff; font: inherit; }
 .bchat .bc-more { flex: none; display: flex; gap: 10px; padding: 0 12px 8px; }
 .bchat .bc-more button { min-width: 72px; min-height: 64px; }
-.bchat .bc-input { flex: none; display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px calc(78px + env(safe-area-inset-bottom)); background: #f7f7f7; }
+.bchat .bc-input { flex: none; display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px calc(64px + env(safe-area-inset-bottom)); background: #f7f7f7; }
 .bchat .bc-plus, .bchat .bc-send { flex: none; height: 36px; border: 0; border-radius: 4px; }
 .bchat .bc-plus { width: 36px; background: #fff; color: #111; font-size: 22px; line-height: 1; }
 .bchat .bc-send { padding: 0 12px; background: #07c160; color: #fff; font: inherit; }

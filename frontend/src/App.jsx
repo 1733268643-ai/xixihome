@@ -37,7 +37,9 @@ export default function App() {
   const [night, setNight] = useState(localStorage.getItem(NIGHT_KEY) === '1');
   const [drawer, setDrawer] = useState(false);
   const [bg, setBg] = useState(() => localStorage.getItem('xixi_bg') || '');
+  const [gateBg, setGateBg] = useState(() => localStorage.getItem('xixi_gate_bg') || '');
   const bgRef = useRef(null);
+  const gateBgRef = useRef(null);
   const [soon, setSoon] = useState('');
   const [palette, setPalette] = useState(false);
 
@@ -87,6 +89,11 @@ export default function App() {
       localStorage.removeItem('xixi_bg');
     }
   }, [bg]);
+
+  useEffect(() => {
+    if (gateBg) localStorage.setItem('xixi_gate_bg', gateBg);
+    else localStorage.removeItem('xixi_gate_bg');
+  }, [gateBg]);
 
   const authHeaders = useCallback((extra) => ({
     'content-type': 'application/json',
@@ -431,6 +438,7 @@ export default function App() {
         return r;
       }}
       onOpened={() => setDoorOpen(true)}
+      wallpaper={gateBg}
     />
   );
   if (checking || !authed || !doorOpen) return gate;
@@ -504,16 +512,31 @@ export default function App() {
             <div className="mrow" onClick={() => setNight(!night)}>
               <Icon.half /> 夜间模式 <span className={`sw${night ? ' on' : ''}`} />
             </div>
+            <div className="mrow" onClick={() => gateBgRef.current?.click()}>
+              <Icon.image /> 进门前的图
+              <span style={{ marginLeft: 'auto', color: 'var(--muted)', fontSize: 11 }}>
+                {gateBg ? '已设置' : '未设置'} ›</span>
+            </div>
+            {gateBg && (
+              <div className="mrow" onClick={() => setGateBg('')}>
+                <Icon.retry /> 恢复进门前的默认
+              </div>
+            )}
             <div className="mrow" onClick={() => bgRef.current?.click()}>
-              <Icon.image /> 自定义背景
+              <Icon.image /> 进屋后的底图
               <span style={{ marginLeft: 'auto', color: 'var(--muted)', fontSize: 11 }}>
                 {bg ? '已设置' : '未设置'} ›</span>
             </div>
             {bg && (
               <div className="mrow" onClick={() => setBg('')}>
-                <Icon.retry /> 恢复默认背景
+                <Icon.retry /> 恢复进屋后的默认
               </div>
             )}
+            <input ref={gateBgRef} type="file" accept="image/*" hidden onChange={async (e) => {
+              const f = e.target.files?.[0]; e.target.value = '';
+              if (!f) return;
+              try { setGateBg(await fileToResizedDataURL(f, 1400, 0.78)); } catch { alert('这张图读不了'); }
+            }} />
             <input ref={bgRef} type="file" accept="image/*" hidden onChange={async (e) => {
               const f = e.target.files?.[0]; e.target.value = '';
               if (!f) return;

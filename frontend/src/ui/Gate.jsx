@@ -6,7 +6,7 @@ import { CrabIcon } from './icons.jsx';
  * 输对了门真的往两边拉开，光铺满，然后进屋。
  * 她说过"门是可以拉开的，其实没有那么复杂"。
  */
-export default function Gate({ pw, setPw, onSubmit, onOpened, wakeMsg, checking }) {
+export default function Gate({ pw, setPw, onSubmit, onOpened, wakeMsg, checking, wallpaper }) {
   const [opening, setOpening] = useState(false);
   const [shake, setShake] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,7 +27,8 @@ export default function Gate({ pw, setPw, onSubmit, onOpened, wakeMsg, checking 
   }
 
   return (
-    <div className={`gate${opening ? ' opening' : ''}`}>
+    <div className={`gate${opening ? ' opening' : ''}${wallpaper ? ' has-photo' : ''}`}>
+      {wallpaper && <div className="gate-photo" style={{ backgroundImage: `url(${wallpaper})` }} />}
       <div className="gate-light" />
 
       <div className="door left">
