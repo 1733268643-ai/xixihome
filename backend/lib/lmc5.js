@@ -119,6 +119,20 @@ export async function getLmc5MemoryById(id) {
   const db = client();
   if (!db) return { available: false, reason: 'not_configured' };
   try {
+    const rawId = String(id).startsWith('raw-') ? String(id).slice(4) : '';
+    if (rawId) {
+      const raw = await db.query(
+        'SELECT id, content, created_at FROM lmc5_raw_events WHERE id = $1 LIMIT 1',
+        [rawId]
+      );
+      if (!raw.rows.length) return { available: false, reason: 'not_found' };
+      const row = raw.rows[0];
+      const content = String(row.content || '');
+      return {
+        available: true,
+        memory: { id: 'raw-' + row.id, content, title: firstLine(content), createdAt: row.created_at },
+      };
+    }
     const { rows } = await db.query(
       'SELECT id, content, e_initial_priority, weight, valence, arousal, category, response_tendency, topic_tag, created_at FROM lmc5_curated_memories WHERE id = $1 LIMIT 1',
       [String(id)]
@@ -137,7 +151,7 @@ export async function getLmc5MemoryById(id) {
         tags: parseTags(row.response_tendency || row.topic_tag),
         valence: Number(row.valence) || 0,
         arousal: Number(row.arousal) || 0,
-        weight: Number(row.weight) || importance,
+        weight: Number(row.weight) || 1,
         createdAt: row.created_at,
       },
     };
