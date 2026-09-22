@@ -106,6 +106,7 @@ export async function getMindState() {
       const today = new Date().toISOString().slice(0, 10);
       return {
         available: true,
+        syncedAt: new Date().toISOString(),
         bark: { lastAt: barkItems[0]?.at || null, items: barkItems },
         consciousness: s.consciousness || null,
         lastConversationAt: s.lastConversationAt || null,

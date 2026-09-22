@@ -62,6 +62,7 @@ export async function getLmc5StarMap() {
 
     return {
       available: true,
+      syncedAt: new Date().toISOString(),
       total: stars.length,
       stars,
       edges: [],
