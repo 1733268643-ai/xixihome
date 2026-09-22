@@ -849,7 +849,9 @@ async function main() {
     if (!bucketRes.ok) throw new Error('Failed to load data: ' + bucketRes.status);
     const bucketData = await bucketRes.json();
     if (bucketData.available === false) throw new Error(bucketData.reason || '星图没接上');
-    if (!bucketData.nodes && Array.isArray(bucketData.stars)) bucketData.nodes = bucketData.stars;
+    if (!bucketData.nodes && Array.isArray(bucketData.stars)) {
+      bucketData.nodes = bucketData.stars.map((star) => ({ ...star, name: star.name || star.title || '' }));
+    }
 
     if (API_CONCEPTS) {
       try {
