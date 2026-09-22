@@ -369,6 +369,7 @@ const API_BASE = location.hostname.endsWith('.onrender.com')
 window.STARMAP_CONFIG = {
   nodesUrl: API_BASE + '/api/star-map',
   detailUrl: API_BASE + '/api/lmc5/memory/{id}',
+  rawUrl: API_BASE + '/api/lmc5/raw-event/{id}',
 };
 </script>
 <script type="module">
@@ -384,6 +385,7 @@ const CONFIG = window.STARMAP_CONFIG || {};
 const API_NODES    = CONFIG.nodesUrl    || './demo-data.json';
 const API_CONCEPTS = CONFIG.conceptsUrl || null;
 const API_DETAIL   = CONFIG.detailUrl   || null;   // e.g. '/api/bucket/{id}'
+const API_RAW      = CONFIG.rawUrl      || null;
 const DEMO_MODE    = !CONFIG.nodesUrl;
 
 // ── Scene ──────────────────────────────────────────────
@@ -745,11 +747,14 @@ async function fetchPreview(id) {
   if (!API_DETAIL) return null;
   if (previewCache[id] !== undefined) return previewCache[id];
   try {
-    const url = API_DETAIL.replace('{id}', id);
+    const raw = String(id).startsWith('raw-');
+    const template = raw ? API_RAW : API_DETAIL;
+    if (!template) return null;
+    const url = template.replace('{id}', encodeURIComponent(raw ? String(id).slice(4) : id));
     const res = await fetch(url, { headers: { 'x-access-password': localStorage.getItem('xixi_pw') || '' } });
     if (!res.ok) { previewCache[id] = null; return null; }
     const data = await res.json();
-    const text = (data.memory?.content ?? data.content ?? '').trim().slice(0, 800);
+    const text = (data.event?.content ?? data.memory?.content ?? data.content ?? '').trim().slice(0, 800);
     previewCache[id] = text || null;
     return previewCache[id];
   } catch { previewCache[id] = null; return null; }
