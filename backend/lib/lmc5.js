@@ -36,25 +36,25 @@ export async function getLmc5StarMap() {
 
   try {
     const { rows } = await db.query(`
-      SELECT id, content, importance, category, emotion_tags, created_at
+      SELECT id, content, e_initial_priority, weight, valence, arousal, category, response_tendency, topic_tag, created_at
       FROM lmc5_curated_memories
       ORDER BY created_at DESC
     `);
 
     const stars = rows.map((row) => {
       const content = String(row.content || '');
-      const importance = Number(row.importance) || 5;
-      const tags = parseTags(row.emotion_tags);
+      const importance = Number(row.e_initial_priority) || 5;
+      const tags = parseTags(row.response_tendency || row.topic_tag);
       return {
         id: String(row.id),
         title: firstLine(content),
         summary: content.length > 180 ? `${content.slice(0, 180)}…` : content,
         pinned: false,
         domains: row.category ? [String(row.category)] : [],
-        valence: 0,
-        arousal: 0,
+        valence: Number(row.valence) || 0,
+        arousal: Number(row.arousal) || 0,
         importance,
-        weight: importance,
+        weight: Number(row.weight) || importance,
         tags,
         createdAt: row.created_at,
       };
@@ -83,7 +83,7 @@ export async function getLmc5MemoryById(id) {
   if (!db) return { available: false, reason: 'not_configured' };
   try {
     const { rows } = await db.query(
-      'SELECT id, content, importance, category, emotion_tags, created_at FROM lmc5_curated_memories WHERE id = $1 LIMIT 1',
+      'SELECT id, content, e_initial_priority, weight, valence, arousal, category, response_tendency, topic_tag, created_at FROM lmc5_curated_memories WHERE id = $1 LIMIT 1',
       [String(id)]
     );
     if (!rows.length) return { available: false, reason: 'not_found' };
@@ -95,9 +95,12 @@ export async function getLmc5MemoryById(id) {
         id: String(row.id),
         content,
         title: firstLine(content),
-        importance: Number(row.importance) || 5,
+        importance: Number(row.e_initial_priority) || 5,
         domains: row.category ? [String(row.category)] : [],
-        tags: parseTags(row.emotion_tags),
+        tags: parseTags(row.response_tendency || row.topic_tag),
+        valence: Number(row.valence) || 0,
+        arousal: Number(row.arousal) || 0,
+        weight: Number(row.weight) || importance,
         createdAt: row.created_at,
       },
     };
