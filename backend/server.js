@@ -16,7 +16,7 @@ import toolsRouter, { handleActivityQuery } from './routes/tools.js';
 import chatActionsRouter from './routes/chat-actions.js';
 import { requireToolsSecret } from './lib/tools/auth.js';
 import { getMindState, searchMemories, getMemoryMap, xinchaoConfigured, ombreConfigured, xinchaoEvent } from './lib/mind-client.js';
-import { getLmc5StarMap, getLmc5MemoryById } from './lib/lmc5.js';
+import { getLmc5StarMap, getLmc5MemoryById, getLmc5RawEventById } from './lib/lmc5.js';
 import lifeRouter from './routes/life.js';
 import connectRouter from './routes/connect.js';
 import * as bridgeChat from './lib/bridge-chat.js';
@@ -905,6 +905,10 @@ app.get('/api/star-map', async (_req, res) => {
 
 app.get('/api/lmc5/memory/:id', async (req, res) => {
   res.json(await getLmc5MemoryById(req.params.id));
+});
+
+app.get('/api/lmc5/raw-event/:id', async (req, res) => {
+  res.json(await getLmc5RawEventById(req.params.id));
 });
 
 // 梦境穹顶：她最近的梦（心潮 recentDreams，最新在前）

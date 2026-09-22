@@ -159,3 +159,29 @@ export async function getLmc5MemoryById(id) {
     return { available: false, reason: String(e.message || e) };
   }
 }
+
+export async function getLmc5RawEventById(id) {
+  const db = client();
+  if (!db) return { available: false, reason: 'not_configured' };
+  try {
+    const { rows } = await db.query(
+      'SELECT id, session_id, role, channel, content, created_at FROM lmc5_raw_events WHERE id = $1 LIMIT 1',
+      [String(id)]
+    );
+    if (!rows.length) return { available: false, reason: 'not_found' };
+    const row = rows[0];
+    return {
+      available: true,
+      event: {
+        id: 'raw-' + row.id,
+        sessionId: row.session_id,
+        role: row.role,
+        channel: row.channel,
+        content: String(row.content || ''),
+        createdAt: row.created_at,
+      },
+    };
+  } catch (e) {
+    return { available: false, reason: String(e.message || e) };
+  }
+}
