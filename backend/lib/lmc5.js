@@ -78,3 +78,30 @@ export async function getLmc5StarMap() {
   }
 }
 
+export async function getLmc5MemoryById(id) {
+  const db = client();
+  if (!db) return { available: false, reason: 'not_configured' };
+  try {
+    const { rows } = await db.query(
+      'SELECT id, content, importance, category, emotion_tags, created_at FROM curated_memories WHERE id = $1 LIMIT 1',
+      [String(id)]
+    );
+    if (!rows.length) return { available: false, reason: 'not_found' };
+    const row = rows[0];
+    const content = String(row.content || '');
+    return {
+      available: true,
+      memory: {
+        id: String(row.id),
+        content,
+        title: firstLine(content),
+        importance: Number(row.importance) || 5,
+        domains: row.category ? [String(row.category)] : [],
+        tags: parseTags(row.emotion_tags),
+        createdAt: row.created_at,
+      },
+    };
+  } catch (e) {
+    return { available: false, reason: String(e.message || e) };
+  }
+}
