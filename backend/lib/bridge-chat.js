@@ -63,7 +63,7 @@ function load(win) {
 
 export function append(win, role, text, source, extra) {
   const key = resolveWin(win);
-  const type = extra?.image ? 'image' : extra?.link ? 'link' : 'text';
+  const type = extra?.image ? 'image' : extra?.link ? 'link' : extra?.audio ? 'audio' : 'text';
   const rec = { ts: Date.now(), role, type, text: String(text), source: source || null, ...(extra || {}) };
   load(key).push(rec);
   try {

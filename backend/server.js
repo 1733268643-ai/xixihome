@@ -1196,6 +1196,29 @@ app.post('/api/bridge/send-image', express.json({ limit: '256kb' }), async (req,
 });
 
 // Stop hook 回传晞晞的回复（scripts/xixihome-stop-hook.sh 调用，token 鉴权）
+app.post('/api/bridge/send-audio', express.json({ limit: '64kb' }), async (req, res) => {
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  const expected = process.env.BRIDGE_MACHINE_TOKEN || process.env.BRIDGE_WEBHOOK_TOKEN || '';
+  if (!expected || token !== expected) return res.status(401).json({ error: 'unauthorized' });
+  const src = String(req.body?.path || '');
+  const durationMs = Number(req.body?.durationMs || req.body?.duration || 0);
+  const win = bridgeChat.resolveWin(req.body?.win);
+  const m = src.match(/\.(mp3|m4a|wav|ogg|aac)$/i);
+  if (!src.startsWith('/') || !m) return res.status(400).json({ error: 'absolute path required; only mp3/m4a/wav/ogg/aac' });
+  try {
+    const { randomUUID } = await import('node:crypto');
+    const { copyFile, stat, mkdir } = await import('node:fs/promises');
+    const st = await stat(src);
+    if (!st.isFile() || st.size > 12 * 1024 * 1024) return res.status(400).json({ error: 'file missing or too large' });
+    const ext = m[1].toLowerCase();
+    const id = `${randomUUID()}.${ext}`;
+    await mkdir(MEDIA_DIR, { recursive: true });
+    await copyFile(src, join(MEDIA_DIR, id));
+    const audio = { url: `/bridge-media/${id}`, name: src.split('/').pop(), size: st.size, durationMs, durationSec: durationMs > 0 ? Math.round(durationMs / 1000) : null };
+    const rec = bridgeChat.append(win, 'assistant', '', req.body?.source || 'host-audio', { audio });
+    res.json({ ok: true, record: rec });
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
 app.post('/api/bridge/reply', express.json({ limit: '2mb' }), (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '');
   const expected = process.env.BRIDGE_MACHINE_TOKEN || process.env.BRIDGE_WEBHOOK_TOKEN || '';
