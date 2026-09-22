@@ -184,17 +184,18 @@ export default function App() {
     try { setMetrics(await api('/api/connect/engine/metrics')); } catch { setMetrics(null); }
   }, [api]);
 
-  // 记忆星图：OB pulse 的全量桶元数据（真实）
+  // 记忆星图：LMC 主库里已经整理好的记忆
   const loadMap = useCallback(async () => {
     try { setMap(await api('/api/star-map')); }
     catch { setMap({ available: false, reason: 'network' }); }
   }, [api]);
 
-  // 点开一颗星要正文：用标题回 OB 召回，仍然是真实内容
+  // 点开一颗星：按这条记录自己的编号取正文，不拿标题去另一套记忆里搜
   const readMemory = useCallback(async (star) => {
-    const d = await api(`/api/mind/memories?q=${encodeURIComponent(star.title)}`);
+    if (!star?.id) return '';
+    const d = await api(`/api/lmc5/memory/${encodeURIComponent(star.id)}`);
     if (!d?.available) return '';
-    return d.text || (Array.isArray(d.data) ? d.data.join('\n\n') : '');
+    return d.memory?.content || '';
   }, [api]);
 
   const loadMind = useCallback(async () => {
