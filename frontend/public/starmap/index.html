@@ -898,7 +898,10 @@ async function main() {
       const n = bucketData.nodes || [];
       const pinned = n.filter((x) => x.pinned).length;
       const el = document.getElementById('skycount');
-      if (el) el.textContent = `${n.length} 颗 · ${pinned} 颗固化 · 来自 LMC`;
+      const timelineNote = bucketData.timeline && bucketData.timeline.available === false
+        ? ` · 蓝星未接上：${bucketData.timeline.reason || '没有目录'}`
+        : '';
+      if (el) el.textContent = `${n.length} 颗 · ${pinned} 颗固化 · 来自 LMC${timelineNote}`;
     }
     allMeshes    = g.meshes;
     pinnedMeshes = g.pinnedMeshes;
