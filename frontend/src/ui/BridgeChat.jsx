@@ -35,6 +35,9 @@ export default function BridgeChat({ api }) {
   const boxRef = useRef(null);
   const fileRef = useRef(null);
   const avatarRef = useRef(null);
+  const audioRef = useRef(null);
+  const [playing, setPlaying] = useState('');
+  const [audioErr, setAudioErr] = useState('');
   const lastTs = useRef(0);
   const avatar = localStorage.getItem(AVATAR_KEY) || '';
 
@@ -169,6 +172,23 @@ export default function BridgeChat({ api }) {
     }
   };
 
+  const playVoice = (url) => {
+    if (!url) return;
+    if (playing === url && audioRef.current) {
+      audioRef.current.pause();
+      setPlaying('');
+      return;
+    }
+    if (audioRef.current) audioRef.current.pause();
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    setAudioErr('');
+    setPlaying(url);
+    audio.onended = () => setPlaying('');
+    audio.onerror = () => { setPlaying(''); setAudioErr(url); };
+    audio.play().catch(() => { setPlaying(''); setAudioErr(url); });
+  };
+
   const current = windows.find((w) => w.win === win);
   const syncedAt = mind?.syncedAt ? new Date(mind.syncedAt).getTime() : null;
   const mindOk = mind?.available === true && (syncedAt == null || Date.now() - syncedAt < 5 * 60 * 1000);
@@ -248,8 +268,10 @@ export default function BridgeChat({ api }) {
           if (timeBreak) lastTsShown = r.ts;
           const mine = r.role === 'user';
           const image = imageOf(r);
-          const link = linkOf(r);
-          const text = textOf(r);
+          const link = r?.type === 'audio' ? null : linkOf(r);
+          const text = r?.type === 'audio' ? '' : textOf(r);
+          const voice = r?.audio?.url ? r.audio : null;
+          const seconds = voice ? (Number(voice.durationSec) || (Number(voice.durationMs) > 0 ? Math.max(1, Math.round(voice.durationMs / 1000)) : 0)) : 0;
           return (
             <div key={r.ts + '' + i}>
               {dayBreak && <div className="bc-day">{day} {fmtT(r.ts)}</div>}
@@ -274,6 +296,16 @@ export default function BridgeChat({ api }) {
                       </span>
                       {link.image ? <img src={link.image} alt="" /> : <em>{link.title.slice(0, 1)}</em>}
                     </a>
+                  )}
+                  {voice && (
+                    <button
+                      type="button"
+                      className={`bc-voice${playing === voice.url ? ' on' : ''}${audioErr === voice.url ? ' bad' : ''}`}
+                      style={{ width: `${Math.min(180, 72 + seconds * 6)}px` }}
+                      onClick={() => playVoice(voice.url)}
+                    >
+                      <i />{audioErr === voice.url ? '没播出来' : `${seconds || '…'}"`}
+                    </button>
                   )}
                   {text && <div className="bc-bub">{text}</div>}
                 </div>
