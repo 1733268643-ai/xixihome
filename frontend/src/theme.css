@@ -1109,3 +1109,72 @@ code.ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-r
 .bridge-window-chip.on { color:var(--ink); border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); background:color-mix(in srgb,var(--accent) 10%,var(--card)); }
 .bridge-window-dot { width:7px; height:7px; border-radius:50%; background:var(--sage); flex:none; }
 .bridge-window-chip small { font-size:9px; opacity:.75; letter-spacing:.08em; }
+
+/* 桥：微信聊天这一页。只包在 .bchat 里，不改房子其他页面。 */
+.bchat { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column;
+  background: #ededed; color: #111; font-size: 16px; }
+.bchat.drag { outline: 2px dashed #07c160; outline-offset: -8px; }
+.bchat .bc-head { flex: none; height: 54px; display: flex; align-items: center; justify-content: center;
+  background: #ededed; border-bottom: 1px solid #d9d9d9; padding-top: env(safe-area-inset-top); }
+.bchat .bc-title { text-align: center; }
+.bchat .bc-title .n { font-size: 17px; font-weight: 600; line-height: 1.2; }
+.bchat .bc-title .s { margin-top: 2px; font-size: 11px; color: #888; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.bchat .bc-title .s i { width: 6px; height: 6px; border-radius: 50%; background: #b2b2b2; }
+.bchat .bc-title .s i.on { background: #07c160; }
+.bchat .bridge-window-list { background: #ededed; padding-bottom: 6px; }
+.bchat .bridge-window-chip { background: #fff; border-color: #e5e5e5; color: #666; }
+.bchat .bridge-window-chip.on { color: #111; background: #fff; border-color: #07c160; }
+.bchat .bc-msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 12px 8px; }
+.bchat .bc-empty { margin: 28px auto; max-width: 240px; text-align: center; color: #888; font-size: 13px; line-height: 1.6; }
+.bchat .bc-day, .bchat .bc-time { text-align: center; color: #b2b2b2; font-size: 12px; margin: 10px 0; }
+.bchat .bc-row { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0; }
+.bchat .bc-row.you { flex-direction: row-reverse; }
+.bchat .bc-av { width: 40px; height: 40px; border-radius: 4px; overflow: hidden; flex: none; background: #ddd; display: grid; place-items: center; }
+.bchat .bc-av img { width: 100%; height: 100%; object-fit: cover; }
+.bchat .bc-av b { font-size: 15px; font-weight: 600; color: #666; }
+.bchat .bc-row.you .bc-av { background: #95ec69; }
+.bchat .bc-row.you .bc-av b { color: #111; }
+.bchat .bc-stack { max-width: min(70%, 280px); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.bchat .bc-row.you .bc-stack { align-items: flex-end; }
+.bchat .bc-bub { padding: 9px 12px; border-radius: 4px; background: #fff; color: #111; line-height: 1.45;
+  word-break: break-word; white-space: pre-wrap; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+.bchat .bc-row.you .bc-bub { background: #95ec69; }
+.bchat .bc-pic { border: 0; padding: 0; background: none; cursor: pointer; }
+.bchat .bc-pic img { display: block; max-width: 160px; max-height: 180px; border-radius: 4px; object-fit: cover; }
+.bchat .bc-card { width: 230px; display: flex; gap: 8px; padding: 10px; border-radius: 4px; background: #fff;
+  color: inherit; text-decoration: none; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+.bchat .bc-card span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.bchat .bc-card b { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bchat .bc-card small { color: #888; font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bchat .bc-card em, .bchat .bc-card img { width: 46px; height: 46px; border-radius: 2px; flex: none; background: #f2f2f2; }
+.bchat .bc-card img { object-fit: cover; }
+.bchat .bc-card em { display: grid; place-items: center; font-style: normal; color: #07c160; font-weight: 700; }
+.bchat .typingdots { display: flex; gap: 4px; align-items: center; min-width: 52px; min-height: 36px; }
+.bchat .typingdots i { width: 6px; height: 6px; border-radius: 50%; background: #999; animation: bc-blink 1.2s infinite; }
+.bchat .typingdots i:nth-child(2) { animation-delay: .2s; }
+.bchat .typingdots i:nth-child(3) { animation-delay: .4s; }
+@keyframes bc-blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.bchat .bc-err { flex: none; margin: 0 12px 6px; color: #c4554d; font-size: 12px; }
+.bchat .bc-pending { flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px 8px; }
+.bchat .bc-pending img { width: 54px; height: 54px; object-fit: cover; border-radius: 4px; }
+.bchat .bc-pending button, .bchat .bc-more button, .bchat .bc-linkbox button { border: 0; background: #fff; color: #111; border-radius: 4px; padding: 6px 10px; }
+.bchat .bc-linkbox { flex: none; display: flex; gap: 8px; padding: 0 12px 8px; }
+.bchat .bc-linkbox input { flex: 1; border: 0; border-radius: 4px; padding: 8px 10px; background: #fff; font: inherit; }
+.bchat .bc-more { flex: none; display: flex; gap: 10px; padding: 0 12px 8px; }
+.bchat .bc-more button { min-width: 72px; min-height: 64px; }
+.bchat .bc-input { flex: none; display: flex; align-items: flex-end; gap: 8px; padding: 8px 10px calc(78px + env(safe-area-inset-bottom)); background: #f7f7f7; }
+.bchat .bc-plus, .bchat .bc-send { flex: none; height: 36px; border: 0; border-radius: 4px; }
+.bchat .bc-plus { width: 36px; background: #fff; color: #111; font-size: 22px; line-height: 1; }
+.bchat .bc-send { padding: 0 12px; background: #07c160; color: #fff; font: inherit; }
+.bchat .bc-send:disabled { background: #b2b2b2; }
+.bchat textarea { flex: 1; min-height: 36px; max-height: 96px; border: 0; border-radius: 4px; padding: 8px 10px; resize: none; font: inherit; background: #fff; }
+.bchat .bc-drop { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(237,237,237,.88); color: #07c160; font-size: 16px; }
+.bchat .bc-zoom { position: absolute; inset: 0; z-index: 8; border: 0; background: rgba(0,0,0,.88); display: grid; place-items: center; padding: 24px; }
+.bchat .bc-zoom img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.night .bchat { background: #111; color: #f3f3f3; }
+.night .bchat .bc-head, .night .bchat .bridge-window-list { background: #111; border-color: #2a2a2a; }
+.night .bchat .bc-bub, .night .bchat .bc-card, .night .bchat .bridge-window-chip,
+.night .bchat textarea, .night .bchat .bc-plus, .night .bchat .bc-pending button,
+.night .bchat .bc-more button, .night .bchat .bc-linkbox button, .night .bchat .bc-linkbox input { background: #2c2c2c; color: #f3f3f3; }
+.night .bchat .bc-row.you .bc-bub { background: #3eb575; color: #111; }
+.night .bchat .bc-input { background: #1a1a1a; }

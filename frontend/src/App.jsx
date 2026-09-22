@@ -95,7 +95,9 @@ export default function App() {
   }), [pw]);
 
   const api = useCallback(async (path, opts = {}) => {
-    const res = await fetch(`${API_BASE}${path}`, { ...opts, headers: authHeaders(opts.headers) });
+    const headers = authHeaders(opts.headers);
+    if (typeof FormData !== 'undefined' && opts.body instanceof FormData) delete headers['content-type'];
+    const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
     if (res.status === 401) { localStorage.removeItem(PW_KEY); setAuthed(false); throw new Error('未授权'); }
     return res.json();
   }, [authHeaders]);
