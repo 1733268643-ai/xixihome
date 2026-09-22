@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { listTimelineStars } from './timeline.js';
 
 const { Pool } = pg;
 
@@ -70,32 +71,8 @@ export async function getLmc5StarMap() {
       };
     });
 
-    const raw = await db.query(`
-      SELECT id, role, channel, content, created_at
-      FROM lmc5_raw_events
-      WHERE created_at > NOW() - interval '72 hours'
-      ORDER BY created_at DESC
-      LIMIT 200
-    `);
-    for (const row of raw.rows) {
-      const content = String(row.content || '');
-      stars.push({
-        id: 'raw-' + row.id,
-        title: firstLine(content),
-        summary: content.length > 120 ? `${content.slice(0, 120)}…` : content,
-        pinned: false,
-        domains: [],
-        valence: 0,
-        arousal: 0,
-        importance: 3,
-        weight: 1,
-        tags: [],
-        source: 'raw_event',
-        category: row.role || row.channel || 'raw',
-        tier: 'blue',
-        createdAt: row.created_at,
-      });
-    }
+    const timelineStars = await listTimelineStars();
+    for (const star of timelineStars) stars.push(star);
 
     return {
       available: true,
