@@ -489,6 +489,10 @@ function logMap(importance, lo, hi) {
 }
 
 function baseColor(d) {
+  if (d.tier === 'gold') return new THREE.Color(0xffd97a);
+  if (d.tier === 'orange') return new THREE.Color(0xff9060);
+  if (d.tier === 'purple') return new THREE.Color(0xb07aff);
+  if (d.tier === 'blue') return new THREE.Color(0x60c8ff);
   if (d.pinned)   return new THREE.Color(0xffd97a);
   if (d.resolved) return new THREE.Color(0x7080a0);
   switch (d.type) {
