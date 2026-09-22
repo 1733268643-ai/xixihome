@@ -1028,7 +1028,8 @@ app.post('/api/bridge/chat/send', (req, res) => {
   const win = bridgeChat.resolveWin(req.body?.win);
   const text = String(req.body?.text || '').trim();
   const image = req.body?.image && typeof req.body.image.url === 'string' ? req.body.image : null;
-  if (!text && !image) return res.status(400).json({ error: '消息不能为空' });
+  const link = req.body?.link && typeof req.body.link.url === 'string' ? req.body.link : null;
+  if (!text && !image && !link) return res.status(400).json({ error: '消息不能为空' });
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, '0'), mm = String(now.getMinutes()).padStart(2, '0');
   const voice = req.body?.voice && Number(req.body.voice.durationMs) > 0 ? {
@@ -1051,10 +1052,14 @@ app.post('/api/bridge/chat/send', (req, res) => {
   } else if (text) {
     payload += ` ${text}`;
   }
+  if (link) {
+    payload += ' [邓邓发来链接] ' + link.url + (link.title ? ' （' + link.title + '）' : '');
+  }
   const r = bridgeChat.inject(win, payload);
   if (!r.ok) return res.status(502).json({ error: r.error });
   const extra = {};
   if (image) extra.image = image;
+  if (link) extra.link = link;
   if (voice) extra.voice = voice;
   const rec = bridgeChat.append(win, 'user', text, 'xixihome', Object.keys(extra).length ? extra : undefined);
   res.json({ ok: true, record: rec });
