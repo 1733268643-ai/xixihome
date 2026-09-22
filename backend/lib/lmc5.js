@@ -71,14 +71,15 @@ export async function getLmc5StarMap() {
       };
     });
 
-    const timelineStars = await listTimelineStars();
-    for (const star of timelineStars) stars.push(star);
+    const timeline = await listTimelineStars();
+    for (const star of timeline.stars) stars.push(star);
 
     return {
       available: true,
       syncedAt: new Date().toISOString(),
       total: stars.length,
       stars,
+      timeline: { available: timeline.available, reason: timeline.reason, count: timeline.stars.length },
       edges: [],
       stats: {
         pinned: stars.filter((s) => s.pinned).length,

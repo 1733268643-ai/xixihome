@@ -11,7 +11,7 @@ function firstLine(content) {
 }
 
 export async function listTimelineStars() {
-  if (!TIMELINE_DIR) return [];
+  if (!TIMELINE_DIR) return { available: false, reason: 'not_configured', stars: [] };
   try {
     const files = (await readdir(TIMELINE_DIR))
       .filter((f) => /^window_\d+_.*\.md$/.test(f))
@@ -66,8 +66,8 @@ export async function listTimelineStars() {
       }
       flush();
     }
-    return stars;
-  } catch {
-    return [];
+    return { available: true, reason: null, stars };
+  } catch (e) {
+    return { available: false, reason: String(e.message || e), stars: [] };
   }
 }
