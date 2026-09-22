@@ -37,7 +37,7 @@ export async function getLmc5StarMap() {
   try {
     const { rows } = await db.query(`
       SELECT id, content, importance, category, emotion_tags, created_at
-      FROM curated_memories
+      FROM lmc5_curated_memories
       ORDER BY created_at DESC
     `);
 
@@ -83,7 +83,7 @@ export async function getLmc5MemoryById(id) {
   if (!db) return { available: false, reason: 'not_configured' };
   try {
     const { rows } = await db.query(
-      'SELECT id, content, importance, category, emotion_tags, created_at FROM curated_memories WHERE id = $1 LIMIT 1',
+      'SELECT id, content, importance, category, emotion_tags, created_at FROM lmc5_curated_memories WHERE id = $1 LIMIT 1',
       [String(id)]
     );
     if (!rows.length) return { available: false, reason: 'not_found' };
