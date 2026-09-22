@@ -30,35 +30,72 @@ function parseTags(value) {
   return String(value).split(/[,，]/).map((x) => x.trim()).filter(Boolean);
 }
 
+const GOLD_CATEGORIES = ['milestone', 'identity', 'rule', 'relationship', 'emotion'];
+
+function tierFor(source, category) {
+  if (source === 'trigger_import' && GOLD_CATEGORIES.includes(category)) return 'gold';
+  if (source === 'dream' && category === 'relationship_moment') return 'orange';
+  return 'purple';
+}
+
 export async function getLmc5StarMap() {
   const db = client();
   if (!db) return { available: false, reason: 'not_configured' };
 
   try {
     const { rows } = await db.query(`
-      SELECT id, content, e_initial_priority, weight, valence, arousal, category, response_tendency, topic_tag, created_at
+      SELECT id, content, source, category, e_initial_priority, weight, valence, arousal, response_tendency, topic_tag, created_at
       FROM lmc5_curated_memories
       ORDER BY created_at DESC
     `);
 
     const stars = rows.map((row) => {
       const content = String(row.content || '');
-      const importance = Number(row.e_initial_priority) || 5;
-      const tags = parseTags(row.response_tendency || row.topic_tag);
+      const tier = tierFor(row.source, row.category);
       return {
         id: String(row.id),
         title: firstLine(content),
         summary: content.length > 180 ? `${content.slice(0, 180)}…` : content,
-        pinned: false,
+        pinned: tier === 'gold',
         domains: row.category ? [String(row.category)] : [],
         valence: Number(row.valence) || 0,
         arousal: Number(row.arousal) || 0,
-        importance,
-        weight: Number(row.weight) || importance,
-        tags,
+        importance: Number(row.e_initial_priority) || 5,
+        weight: Number(row.weight) || 1,
+        tags: parseTags(row.response_tendency || row.topic_tag),
+        source: row.source || null,
+        category: row.category || null,
+        tier,
         createdAt: row.created_at,
       };
     });
+
+    const raw = await db.query(`
+      SELECT id, role, channel, content, created_at
+      FROM lmc5_raw_events
+      WHERE created_at > NOW() - interval '72 hours'
+      ORDER BY created_at DESC
+      LIMIT 200
+    `);
+    for (const row of raw.rows) {
+      const content = String(row.content || '');
+      stars.push({
+        id: 'raw-' + row.id,
+        title: firstLine(content),
+        summary: content.length > 120 ? `${content.slice(0, 120)}…` : content,
+        pinned: false,
+        domains: [],
+        valence: 0,
+        arousal: 0,
+        importance: 3,
+        weight: 1,
+        tags: [],
+        source: 'raw_event',
+        category: row.role || row.channel || 'raw',
+        tier: 'blue',
+        createdAt: row.created_at,
+      });
+    }
 
     return {
       available: true,
@@ -67,7 +104,7 @@ export async function getLmc5StarMap() {
       stars,
       edges: [],
       stats: {
-        pinned: 0,
+        pinned: stars.filter((s) => s.pinned).length,
         dynamic: stars.length,
         archived: 0,
         size: `${stars.length} 条`,
