@@ -193,7 +193,9 @@ export default function App() {
   // 点开一颗星：按这条记录自己的编号取正文，不拿标题去另一套记忆里搜
   const readMemory = useCallback(async (star) => {
     if (!star?.id) return '';
+    if (star.content) return star.content;
     const id = String(star.id);
+    if (id.startsWith('window-')) return '';
     const raw = id.startsWith('raw-');
     const path = raw
       ? `/api/lmc5/raw-event/${encodeURIComponent(id.slice(4))}`

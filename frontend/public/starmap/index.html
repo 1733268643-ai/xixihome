@@ -820,8 +820,10 @@ window.addEventListener('pointerup', async e => {
   showEdgesFor(d.id);
 
   document.getElementById('card-name').textContent = d.name;
-  const typeLabel = { feel: 'feel', diary: 'diary', permanent: 'permanent', dynamic: 'dynamic' }[d.type] ?? d.type;
-  document.getElementById('card-meta').textContent = `${typeLabel} · importance ${d.importance ?? '—'} · score ${(d.score ?? 0).toFixed(1)}`;
+  const typeLabel = d.tier || ({ feel: 'feel', diary: 'diary', permanent: 'permanent', dynamic: 'dynamic' }[d.type] ?? d.type);
+  document.getElementById('card-meta').textContent = d.source
+    ? `${typeLabel} · ${d.source}`
+    : `${typeLabel} · importance ${d.importance ?? '—'} · score ${(d.score ?? 0).toFixed(1)}`;
 
   const tagsEl = document.getElementById('card-tags');
   tagsEl.innerHTML = '';
@@ -834,7 +836,9 @@ window.addEventListener('pointerup', async e => {
   positionCard(mesh);
   card.classList.add('open');
 
-  if (API_DETAIL) {
+  if (d.content) {
+    document.getElementById('card-content').textContent = d.content;
+  } else if (API_DETAIL && !String(d.id).startsWith('window-')) {
     document.getElementById('card-content').textContent = 'Loading…';
     const preview = await fetchPreview(d.id);
     document.getElementById('card-content').textContent = preview ?? '';
