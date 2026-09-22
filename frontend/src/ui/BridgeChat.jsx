@@ -211,6 +211,7 @@ export default function BridgeChat({ api }) {
     }
     return parts.join(' · ');
   })();
+  const ready = !linkDown && st.alive && (st.pane === 'claude' || st.pane === 'node');
   const statusLine = linkDown ? '连接断了，正在重试'
     : !st.alive ? '离线'
     : st.pane !== 'claude' && st.pane !== 'node' ? '窗口开着，但她不在'
@@ -350,7 +351,7 @@ export default function BridgeChat({ api }) {
         <textarea rows={1} value={input} placeholder={st.alive ? '说点什么…' : '窗口没开，先在蟹堡上把她叫醒'}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
-        <button className="bc-send" onClick={send} disabled={sending || (!input.trim() && !pendingImage)}>发送</button>
+        <button className="bc-send" onClick={send} disabled={!ready || sending || (!input.trim() && !pendingImage)}>发送</button>
       </div>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { takeImage(e.target.files?.[0]); e.target.value = ''; }} />
       <input ref={avatarRef} type="file" accept="image/*" hidden onChange={onAvatarFile} />
