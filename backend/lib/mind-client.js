@@ -111,6 +111,8 @@ export async function getMindState() {
         consciousness: s.consciousness || null,
         lastConversationAt: s.lastConversationAt || null,
         sleepStartedAt: s.sleepStartedAt || null,
+        emotion: s.emotion || null,
+        fatigue: s.fatigue ?? null,
         drives,
         dreams,
         dreamsToday: (s.dreamUsage || {})[today] || 0,
