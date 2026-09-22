@@ -173,6 +173,22 @@ export default function BridgeChat({ api }) {
   const syncedAt = mind?.syncedAt ? new Date(mind.syncedAt).getTime() : null;
   const mindOk = mind?.available === true && (syncedAt == null || Date.now() - syncedAt < 5 * 60 * 1000);
   const awake = mind?.consciousness === 'asleep' || mind?.consciousness === 'sleeping' ? '睡着' : mind?.consciousness === 'awake' ? '醒着' : (mind?.consciousness || '状态未知');
+  const feeling = (() => {
+    const parts = [];
+    const emotion = mind?.emotion;
+    if (typeof emotion === 'string' && emotion) parts.push(emotion);
+    else if (emotion && typeof emotion === 'object') {
+      const label = emotion.label || emotion.tag || emotion.name;
+      if (label) parts.push(String(label));
+    }
+    const fatigue = mind?.fatigue;
+    if (typeof fatigue === 'number') parts.push(`疲劳 ${fatigue}`);
+    else if (typeof fatigue === 'string' && fatigue) parts.push(fatigue);
+    else if (fatigue && typeof fatigue === 'object' && (fatigue.label || fatigue.value != null)) {
+      parts.push(fatigue.label ? String(fatigue.label) : `疲劳 ${fatigue.value}`);
+    }
+    return parts.join(' · ');
+  })();
   const statusLine = !st.alive ? '离线'
     : st.pane !== 'claude' && st.pane !== 'node' ? '窗口开着，但她不在'
       : st.typing ? '正在输入…' : '在线';
@@ -202,6 +218,7 @@ export default function BridgeChat({ api }) {
         {mindOk ? (
           <>
             <b>{awake}</b>
+            {feeling && <span className="bc-feel">{feeling}</span>}
             <span className="bc-petals">
               {(mind?.drives || []).map((drive) => (
                 <i key={drive.key} title={drive.label || drive.key} style={{ height: `${8 + Math.max(0, Math.min(1, Number(drive.value) || 0)) * 16}px` }} />

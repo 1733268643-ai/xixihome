@@ -1124,6 +1124,7 @@ code.ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-r
 .bchat .bc-days { margin-top: 2px; font-size: 11px; color: #888; }
 .bchat .bc-status { flex: none; display: flex; align-items: flex-end; gap: 8px; min-height: 28px; padding: 4px 12px 8px; background: #ededed; color: #666; font-size: 12px; }
 .bchat .bc-status b { font-weight: 600; color: #111; }
+.bchat .bc-feel { max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bchat .bc-petals { display: flex; align-items: flex-end; gap: 3px; height: 24px; }
 .bchat .bc-petals i { width: 4px; border-radius: 2px 2px 0 0; background: #07c160; display: block; }
 .bchat .bc-status small { margin-left: auto; color: #999; }
