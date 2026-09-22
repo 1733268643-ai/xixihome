@@ -437,7 +437,6 @@ export default function App() {
 
   const TABS = [
     ['home', '家', Icon.home],
-    ['chat', '聊天', Icon.chat],
     ['bridge', '桥', Icon.inner],
     ['star', '星图', Icon.star],
   ];
@@ -491,22 +490,6 @@ export default function App() {
               <div className="days">在一起的第 <b>{daysTogether()}</b> 天</div>
               <div className="since">since 2026.06.14</div>
             </div>
-
-            <div className="mgroup">对话</div>
-            {sessions.map((s) => (
-              <div key={s.id} className={`mrow${s.id === sessionId ? ' on' : ''}`}
-                onClick={() => { setDrawer(false); openSession(s.id, s.name); }}>
-                <Icon.chat /> {s.name}
-              </div>
-            ))}
-            <div className="mrow" onClick={async () => {
-              const name = window.prompt('新房间叫什么？');
-              if (!name || !name.trim()) return;
-              try {
-                const r = await api('/api/sessions', { method: 'POST', body: JSON.stringify({ name: name.trim() }) });
-                setSessions((v) => [r, ...v]); setDrawer(false); openSession(r.id, r.name);
-              } catch (e) { alert('建不了：' + e.message); }
-            }}><Icon.plus /> 新房间</div>
 
             <div className="mgroup">主题</div>
             <div className="themes">

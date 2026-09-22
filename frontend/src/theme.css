@@ -1121,6 +1121,12 @@ code.ic { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-r
 .bchat .bc-title .s { margin-top: 2px; font-size: 11px; color: #888; display: flex; align-items: center; justify-content: center; gap: 4px; }
 .bchat .bc-title .s i { width: 6px; height: 6px; border-radius: 50%; background: #b2b2b2; }
 .bchat .bc-title .s i.on { background: #07c160; }
+.bchat .bc-days { margin-top: 2px; font-size: 11px; color: #888; }
+.bchat .bc-status { flex: none; display: flex; align-items: flex-end; gap: 8px; min-height: 28px; padding: 4px 12px 8px; background: #ededed; color: #666; font-size: 12px; }
+.bchat .bc-status b { font-weight: 600; color: #111; }
+.bchat .bc-petals { display: flex; align-items: flex-end; gap: 3px; height: 24px; }
+.bchat .bc-petals i { width: 4px; border-radius: 2px 2px 0 0; background: #07c160; display: block; }
+.bchat .bc-status small { margin-left: auto; color: #999; }
 .bchat .bridge-window-list { background: #ededed; padding-bottom: 6px; }
 .bchat .bridge-window-chip { background: #fff; border-color: #e5e5e5; color: #666; }
 .bchat .bridge-window-chip.on { color: #111; background: #fff; border-color: #07c160; }

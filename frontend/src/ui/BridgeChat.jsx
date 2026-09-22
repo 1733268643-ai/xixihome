@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { hostnameOf, imageOf, linkOf, textOf } from './bridge-message.js';
 import { fileToResizedDataURL } from './Chat.jsx';
+import { daysTogether } from './pages.jsx';
 
 const AVATAR_KEY = 'xixi_call_avatar';
 
@@ -28,8 +29,12 @@ export default function BridgeChat({ api }) {
   const [pendingImage, setPendingImage] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [zoom, setZoom] = useState('');
+  const [avatars, setAvatars] = useState({ xixi: '', dengdeng: '' });
+  const [mind, setMind] = useState(null);
+  const [avatarWho, setAvatarWho] = useState('xixi');
   const boxRef = useRef(null);
   const fileRef = useRef(null);
+  const avatarRef = useRef(null);
   const lastTs = useRef(0);
   const avatar = localStorage.getItem(AVATAR_KEY) || '';
 
@@ -54,7 +59,24 @@ export default function BridgeChat({ api }) {
     } catch { /* 网络抖动忽略 */ }
   }, [api, win]);
 
+  const loadFace = useCallback(async () => {
+    try {
+      const data = await api('/api/life/avatars');
+      if (data?.available) setAvatars({ xixi: data.xixi || '', dengdeng: data.dengdeng || '' });
+    } catch { /* 头像没配就用字 */ }
+  }, [api]);
+
+  const loadMindBar = useCallback(async () => {
+    try {
+      setMind(await api('/api/mind/state'));
+    } catch {
+      setMind({ available: false });
+    }
+  }, [api]);
+
   useEffect(() => { loadWindows(); }, [loadWindows]);
+  useEffect(() => { loadFace(); }, [loadFace]);
+  useEffect(() => { loadMindBar(); const t = setInterval(loadMindBar, 60000); return () => clearInterval(t); }, [loadMindBar]);
   useEffect(() => { pull(); const t = setInterval(pull, 2500); return () => clearInterval(t); }, [pull]);
   useEffect(() => { const el = boxRef.current; if (el) el.scrollTop = el.scrollHeight; }, [recs, st.typing, pendingImage]);
   useEffect(() => () => { if (pendingImage?.url) URL.revokeObjectURL(pendingImage.url); }, [pendingImage]);
@@ -132,7 +154,25 @@ export default function BridgeChat({ api }) {
     setSending(false);
   };
 
+  const onAvatarFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const image = await fileToResizedDataURL(file, 280, 0.82);
+      setAvatars((v) => ({ ...v, [avatarWho]: image }));
+      const saved = await api('/api/life/avatars', { method: 'PUT', body: JSON.stringify({ who: avatarWho, image }) });
+      if (saved?.error) setErr(saved.error);
+    } catch (err) {
+      setErr(err.message || '头像没换上');
+      loadFace();
+    }
+  };
+
   const current = windows.find((w) => w.win === win);
+  const syncedAt = mind?.syncedAt ? new Date(mind.syncedAt).getTime() : null;
+  const mindOk = mind?.available === true && (syncedAt == null || Date.now() - syncedAt < 5 * 60 * 1000);
+  const awake = mind?.consciousness === 'asleep' || mind?.consciousness === 'sleeping' ? '睡着' : mind?.consciousness === 'awake' ? '醒着' : (mind?.consciousness || '状态未知');
   const statusLine = !st.alive ? '离线'
     : st.pane !== 'claude' && st.pane !== 'node' ? '窗口开着，但她不在'
       : st.typing ? '正在输入…' : '在线';
@@ -155,8 +195,22 @@ export default function BridgeChat({ api }) {
         <div className="bc-title">
           <div className="n">晞晞</div>
           <div className="s"><i className={st.alive ? 'on' : ''} />{statusLine} · {current?.label || win}</div>
+          <div className="bc-days">在一起的第 {daysTogether()} 天</div>
         </div>
       </header>
+      <div className="bc-status">
+        {mindOk ? (
+          <>
+            <b>{awake}</b>
+            <span className="bc-petals">
+              {(mind?.drives || []).map((drive) => (
+                <i key={drive.key} title={drive.label || drive.key} style={{ height: `${8 + Math.max(0, Math.min(1, Number(drive.value) || 0)) * 16}px` }} />
+              ))}
+            </span>
+            <small>{mind?.syncedAt ? `同步 ${fmtT(new Date(mind.syncedAt).getTime())}` : '同步时间还没有'}</small>
+          </>
+        ) : <small>{mind ? '心潮暂不可用' : '心潮读取中'}</small>}
+      </div>
       <div className="bridge-window-list">
         {(windows.length ? windows : [{ win: 'xixi', label: '晞晞', kind: 'claude' }]).map((w) => (
           <button key={w.win} className={`bridge-window-chip${w.win === win ? ' on' : ''}`}
@@ -184,9 +238,11 @@ export default function BridgeChat({ api }) {
               {dayBreak && <div className="bc-day">{day} {fmtT(r.ts)}</div>}
               {timeBreak && !dayBreak && <div className="bc-time">{fmtT(r.ts)}</div>}
               <div className={`bc-row ${mine ? 'you' : 'him'}`}>
-                <span className="bc-av">
-                  {!mine && avatar ? <img src={avatar} alt="" /> : <b>{mine ? '我' : '晞'}</b>}
-                </span>
+                <button type="button" className="bc-av" onClick={() => { setAvatarWho(mine ? 'dengdeng' : 'xixi'); avatarRef.current?.click(); }}>
+                  {(mine ? avatars.dengdeng : (avatars.xixi || avatar))
+                    ? <img src={mine ? avatars.dengdeng : (avatars.xixi || avatar)} alt="" />
+                    : <b>{mine ? '我' : '晞'}</b>}
+                </button>
                 <div className="bc-stack">
                   {image && (
                     <button className="bc-pic" onClick={() => setZoom(image)} type="button">
@@ -210,7 +266,9 @@ export default function BridgeChat({ api }) {
         })}
         {st.typing && (
           <div className="bc-row him">
-            <span className="bc-av">{avatar ? <img src={avatar} alt="" /> : <b>晞</b>}</span>
+            <button type="button" className="bc-av" onClick={() => { setAvatarWho('xixi'); avatarRef.current?.click(); }}>
+              {(avatars.xixi || avatar) ? <img src={avatars.xixi || avatar} alt="" /> : <b>晞</b>}
+            </button>
             <div className="bc-bub typingdots"><i /><i /><i /></div>
           </div>
         )}
@@ -243,6 +301,7 @@ export default function BridgeChat({ api }) {
         <button className="bc-send" onClick={send} disabled={sending || (!input.trim() && !pendingImage)}>发送</button>
       </div>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { takeImage(e.target.files?.[0]); e.target.value = ''; }} />
+      <input ref={avatarRef} type="file" accept="image/*" hidden onChange={onAvatarFile} />
       {dragOver && <div className="bc-drop">松开即可添加图片</div>}
       {zoom && (
         <button className="bc-zoom" type="button" onClick={() => setZoom('')} aria-label="关闭">
