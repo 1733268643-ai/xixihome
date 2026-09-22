@@ -38,6 +38,7 @@ export default function BridgeChat({ api }) {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState('');
   const [audioErr, setAudioErr] = useState('');
+  const [linkDown, setLinkDown] = useState(false);
   const lastTs = useRef(0);
   const avatar = localStorage.getItem(AVATAR_KEY) || '';
 
@@ -54,12 +55,13 @@ export default function BridgeChat({ api }) {
     try {
       const q = lastTs.current ? `?win=${encodeURIComponent(win)}&since=${lastTs.current}` : `?win=${encodeURIComponent(win)}&limit=200`;
       const data = await api(`/api/bridge/chat${q}`);
+      setLinkDown(false);
       setSt({ alive: data.alive, pane: data.pane, typing: data.typing });
       if (data.records?.length) {
         lastTs.current = data.records[data.records.length - 1].ts;
         setRecs((r) => [...r, ...data.records].slice(-500));
       }
-    } catch { /* 网络抖动忽略 */ }
+    } catch { setLinkDown(true); }
   }, [api, win]);
 
   const loadFace = useCallback(async () => {
@@ -209,7 +211,8 @@ export default function BridgeChat({ api }) {
     }
     return parts.join(' · ');
   })();
-  const statusLine = !st.alive ? '离线'
+  const statusLine = linkDown ? '连接断了，正在重试'
+    : !st.alive ? '离线'
     : st.pane !== 'claude' && st.pane !== 'node' ? '窗口开着，但她不在'
       : st.typing ? '正在输入…' : '在线';
 
@@ -230,7 +233,7 @@ export default function BridgeChat({ api }) {
       <header className="bc-head">
         <div className="bc-title">
           <div className="n">晞晞</div>
-          <div className="s"><i className={st.alive ? 'on' : ''} />{statusLine} · {current?.label || win}</div>
+          <div className="s"><i className={st.alive && !linkDown ? 'on' : ''} />{statusLine} · {current?.label || win}</div>
           <div className="bc-days">在一起的第 {daysTogether()} 天</div>
         </div>
       </header>
