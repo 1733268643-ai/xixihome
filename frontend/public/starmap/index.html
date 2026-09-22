@@ -26,6 +26,13 @@
     50% { opacity: 0.8; }
   }
 
+  #back {
+    position: fixed; top: 14px; left: 14px; z-index: 400;
+    color: rgba(224,232,255,.85); text-decoration: none;
+    font-size: 14px; padding: 8px 12px; border-radius: 999px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+    backdrop-filter: blur(12px);
+  }
   #error-msg {
     position: fixed; inset: 0; display: none; align-items: center;
     justify-content: center; flex-direction: column; gap: 12px;
@@ -174,6 +181,7 @@
 </style>
 </head>
 <body>
+<a id="back" href="/">返回</a>
 
 <div id="loading">
   <canvas id="loading-canvas"></canvas>
@@ -354,13 +362,13 @@
 </script>
 
 <script>
-// 晞晞的家：接真实 OB 数据（经 xixihome 后端），密码沿用主应用的 localStorage
+// 星空这一页读 LMC 主库。网的样子不动。密码沿用主应用的 localStorage。
 // 静态站（xixi-1.onrender.com）没有 /api，要打到后端；本地开发走 vite 代理
 const API_BASE = location.hostname.endsWith('.onrender.com')
   ? 'https://xixi.onrender.com' : '';
 window.STARMAP_CONFIG = {
-  nodesUrl: API_BASE + '/api/mind/network',
-  detailUrl: API_BASE + '/api/mind/bucket/{id}',
+  nodesUrl: API_BASE + '/api/star-map',
+  detailUrl: API_BASE + '/api/lmc5/memory/{id}',
 };
 </script>
 <script type="module">
@@ -737,7 +745,7 @@ async function fetchPreview(id) {
     const res = await fetch(url, { headers: { 'x-access-password': localStorage.getItem('xixi_pw') || '' } });
     if (!res.ok) { previewCache[id] = null; return null; }
     const data = await res.json();
-    const text = (data.content ?? '').trim().slice(0, 120);
+    const text = (data.memory?.content ?? data.content ?? '').trim().slice(0, 800);
     previewCache[id] = text || null;
     return previewCache[id];
   } catch { previewCache[id] = null; return null; }
@@ -840,6 +848,8 @@ async function main() {
     const bucketRes = await fetch(API_NODES, { headers: { 'x-access-password': localStorage.getItem('xixi_pw') || '' } });
     if (!bucketRes.ok) throw new Error('Failed to load data: ' + bucketRes.status);
     const bucketData = await bucketRes.json();
+    if (bucketData.available === false) throw new Error(bucketData.reason || '星图没接上');
+    if (!bucketData.nodes && Array.isArray(bucketData.stars)) bucketData.nodes = bucketData.stars;
 
     if (API_CONCEPTS) {
       try {
@@ -873,7 +883,7 @@ async function main() {
       const n = bucketData.nodes || [];
       const pinned = n.filter((x) => x.pinned).length;
       const el = document.getElementById('skycount');
-      if (el) el.textContent = `${n.length} 颗 · ${pinned} 颗固化 · 全部来自 OB`;
+      if (el) el.textContent = `${n.length} 颗 · ${pinned} 颗固化 · 来自 LMC`;
     }
     allMeshes    = g.meshes;
     pinnedMeshes = g.pinnedMeshes;
